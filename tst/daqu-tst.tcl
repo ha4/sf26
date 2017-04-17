@@ -2,11 +2,11 @@
 # the next line restarts using the correct interpreter \
 exec wish "$0" "$@"
 
-source daqu.tcl
+source ../daqu.tcl
 
 # The terminal bindings
 if {$tcl_platform(platform) == "windows" } {
-	set ConfPort "\\.\\\\COM1"
+	set ConfPort "\\.\\\\COM4"
 } else {
 	set ConfPort "/dev/ttyUSB0"
 }

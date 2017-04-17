@@ -82,10 +82,3 @@ proc cmd_fsel {fvar} {
 	if { $filename != "" } { set sf $filename }
 }
 
-proc cmd_showex {showit} {
-	if { $showit } {
-	   pack .toolbar2 -side right -fill y
-	} else {
-	   pack forget .toolbar2
-	}
-}

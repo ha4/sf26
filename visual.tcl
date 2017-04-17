@@ -56,7 +56,7 @@ button .toolbar.open  -text "  Open" -relief flat -overrelief raised -command {c
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file                -relief sunken                 -textvariable par(file) -width 26
 button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel par(file)}
-checkbutton .toolbar.shex -text "Show" -relief flat -variable vShowEx -command {cmd_showex $vShowEx}
+checkbutton .toolbar.shex -text "Show" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack   .toolbar.conn  -side left
 pack   .toolbar.port  -side left
@@ -141,9 +141,10 @@ grid   [label .toolbar2.lCti -text "   TinCorr"]  .toolbar2.vTinmax
 grid   [label .toolbar2.lCto -text "  ToutCorr"]  .toolbar2.vToutmax
 grid   [label .toolbar2.lAlph -text "SmoothAlpha"]  .toolbar2.vAlpha
 
-pack .toolbar2 -side right -fill y
-
 pack .t -side top -fill both -expand true
+
+pack .toolbar2 -side top -fill y
+
 
 set chart [::AutoPlotM::create .t.c]
 set ::AutoPlotM::plotcols(setnone)  black
@@ -189,4 +190,12 @@ proc show_dset {n} {
 	if {$n == 2} { .toolbar.dset2 configure -state active } else { .toolbar.dset2 configure -state disabled  }
 	if {$n == 3} { .toolbar.dset3 configure -state active } else { .toolbar.dset3 configure -state disabled  }
 	if {$n == 4} { .toolbar.dset4 configure -state active } else { .toolbar.dset4 configure -state disabled  }
+}
+
+proc showex {showit} {
+	if { $showit } {
+	   pack .toolbar2 -side right -fill y
+	} else {
+	   pack forget .toolbar2
+	}
 }

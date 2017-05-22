@@ -66,7 +66,10 @@ proc cmd_cell {} {
 
 proc cmd_conn {} {
    global par
-   ::DAQU::restart $par(port) data_dispatcher
+   global chu
+
+   $chu port $par(port)
+   $chu restart
 }
 
 proc cmd_fsel {fvar} {

@@ -14,12 +14,15 @@ source visual.tcl
 source commands.tcl
 source datapars.tcl
 source defaults.tcl
-set sf26cc_version "2.0"
-set sf26cc_date "20170417"
+set sf26cc_version "3.0"
+set sf26cc_date "20170522"
 
 # --- Widgets SETUP
 frames
 
 catch {console hide}
 raise .
-catch {::DAQU::start $par(port) data_dispatcher}
+
+set chu [::DAQU::channel 1 data_dispatcher]
+$chu port $par(port)
+catch {$chu open}

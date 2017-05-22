@@ -52,13 +52,17 @@ pack .t -side top -fill both -expand true
 
 set chart [::AutoPlotM::create .t.c]
 
-proc read_data {clk ach volt sens} {
+proc read_data {self} {
     global  dumpfl
     global  chart
     global  n
     incr n
 
-   $chart $n $volt set1
+    set clk [clock seconds]
+    foreach {ach volt sens} [$self decode] {break}
+    if {![info exists sens]} {return}
+
+    $chart $n $volt set1
 #   puts "$clk $ach $volt $sens"
    if {[info exist dumpfl]} {
 	animate .toolbar.anim 25
@@ -93,12 +97,13 @@ proc cmd_clr {} {
     global  n
     set n 0
     ::AutoPlotM::clear .t.c
-	animate .toolbar.anim
+    animate .toolbar.anim
 }
 
 proc cmd_conn {} {
-   global ConfPort
-::DAQU::restart $ConfPort read_data
+   global chu
+  
+   $chu restart
 }
 
 proc cmd_fsel {fvar} {
@@ -144,5 +149,8 @@ set ::AutoPlotM::plotcols(set3)  pink
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
 
-catch {::DAQU::start $ConfPort read_data}
+set chu [::DAQU::channel 1 read_data]
+$chu port $ConfPort
+catch {$chu open}
+
 catch {console hide}

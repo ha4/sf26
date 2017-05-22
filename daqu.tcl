@@ -1,40 +1,86 @@
+
+#
+# ad7705/tiny2313 Voltmeter DAQ
+#
+
 namespace eval ::DAQU {
-   variable msg ""
-   variable chan ""
-   namespace export port_cmd process_msg start stop restart
+	variable fd
+	variable port
+	variable rsp
+	variable fu
+	variable daqredo
+
+	namespace export channel cmd req popen pclose restart
+# port_cmd -> req, start->popem, stop->pclose
 }
 
-proc ::DAQU::port_cmd {cmd} {
-	variable chan
 
-	puts  $chan $cmd
-	flush $chan
+proc ::DAQU::channel {chN funct } {
+	variable fd
+	variable fu
+
+	set newchan "xtdaqu2.$chN"
+	interp alias {} $newchan {} ::DAQU::cmd $chN
+
+	set fd($chN) ""
+	set fu($chN) $funct
+
+	return $newchan
 }
 
-proc ::DAQU::process_msg {msg func} {
-	set tim [clock seconds]
 
-	if {[regexp {^(5[0-9A-F]\s.*)} $msg -> ferr] } {
-		puts "$tim $ferr"
-	} elseif {[regexp {^(2[0-9A-F]\s.*)} $msg -> fok]} {
-		puts "$tim $fok"
-	} elseif {[regexp {^(4[0-9A-F]\s.*)} $msg -> fbad]} {
-		puts "$tim $fbad"
-	} elseif {[regexp {^10\s([0-9A-F])\s([0-9A-F]{4})\s([0-9A-F]{1,2})} $msg -> ach uhex pinb]} {
-		$func $tim $ach [expr 2.5 * (0x$uhex-0x8000) / 0x8000 ] [expr 0x$pinb]
-	} else {
-#	        port_cmd G1
+
+proc ::DAQU::cmd {chN v args} {
+	variable rsp
+
+	switch $v {
+	req  { ::DAQU::req $chN }
+	port { ::DAQU::port $chN {*}$args}
+	open { ::DAQU::popen $chN }
+	close { ::DAQU::pclose $chN }
+	restart { ::DAQU::restart $chN }
+	decode { ::DAQU::decode $rsp($chN) }
+	rsp  { return $rsp($chN) }
+	chN { return $chN }
 	}
 }
 
-proc ::DAQU::port_in {lchan port func} {
-	variable msg
 
-#	set rd [read $lchan]
+proc ::DAQU::req {cmd} {
+	variable fd
+	variable rsp
 
-	     if {[catch {set rd [read $lchan]} errx]} {
+	if {$fd($chN) == ""} {return}
+	puts  $fd($chN) $cmd
+	flush $fd($chN)
+}
+
+
+proc ::DAQU::decode {msg} {
+	if {[regexp {^(5[0-9A-F]\s.*)} $msg -> ferr] } {
+		puts "err $ferr"
+	} elseif {[regexp {^(2[0-9A-F]\s.*)} $msg -> fok]} {
+		puts "ok $fok"
+	} elseif {[regexp {^(4[0-9A-F]\s.*)} $msg -> fbad]} {
+		puts "bad $fbad"
+	} elseif {[regexp {^10\s([0-9A-F])\s([0-9A-F]{4})\s([0-9A-F]{1,2})} $msg -> ach uhex pinb]} {
+		return [list $ach [expr 2.5 * (0x$uhex-0x8000) / 0x8000 ] [expr 0x$pinb]]
+	} else {
+#	        req ?ch G1
+	}
+	return [list]
+}
+
+proc ::DAQU::port_in {chN} {
+	variable fd
+	variable fu
+	variable rsp
+
+        if {[eof $fd($chN)]} { return }
+#	set rd [read $fd($chN)]
+	     if {[catch {set rd [read $fd($chN)]} errx]} {
 	# error
-		puts "read error"
+		puts "read error: $errx"
 		return
 	     }
 
@@ -42,53 +88,76 @@ proc ::DAQU::port_in {lchan port func} {
 	  switch -regexp $ch {
           \x07 { }
           [\x0A\x0D] {
-		 watchdog $port $func
-		 set str $msg
-		 set msg ""
-		 process_msg $str $func
+		watchdog $chN
+		$fu($chN) "xtdaqu2.$chN"
+		set rsp($chN) ""
  		}
-          default { append msg $ch  }
+          default { append rsp($chN) $rd }
 	  }
 	}
 }
 
-proc ::DAQU::start {v_port func} {
-	variable chan
+proc ::DAQU::port {chN p} {
+	variable fd
+	variable port
 
-	set chan [open $v_port r+]
-	fconfigure $chan -mode "9600,n,8,1" -translation binary \
+	set port($chN) $p
+
+	if {$fd($chN) != ""} {
+		pclose $chN
+		popen $chN
+	}
+}
+
+proc ::DAQU::popen {chN} {
+	variable fd
+	variable port
+
+	if {$fd($chN) != ""} { pclose $chN }
+
+	if {[catch {set fd($chN) [open $port($chN) r+]}]} { return }
+
+	fconfigure $fd($chN) -mode 9600,n,8,1 -translation binary \
             -buffering none -blocking 0
 
 #	after 500
-
-	fileevent $chan readable [list ::DAQU::port_in $chan $v_port $func]
-
+	fileevent $fd($chN) readable [list ::DAQU::port_in $chN]
 }
 
-proc ::DAQU::stop {} {
-	variable chan
-	global daqredo
+proc ::DAQU::pclose {chN} {
+	variable daqredo
+	variable fd
 
-	if { [info exists daqredo] } { after cancel $daqredo }
+	if { [info exists daqredo($chN)] } { after cancel $daqredo($chN) }
 
-	if {$chan != ""} { close $chan }
+	catch {close $fd($chN)}
+	set $fd($chN) ""
 }
 
-proc ::DAQU::watchdog {port func} {
-	global daqredo
+proc ::DAQU::watchdog {chN} {
+	variable daqredo
 
-	if { [info exists daqredo] } { after cancel $daqredo }
-	set daqredo [after 2000 [list ::DAQU::restart $port $func]]
-
+	if { [info exists daqredo($chN)] } { after cancel $daqredo($chN) }
+	set daqredo($chN) [after 2000 [list ::DAQU::restart $chN]]
 }
 
-proc ::DAQU::restart {v_port v_func} {
-	global daqredo
+proc ::DAQU::restart {chN} {
+	variable rsp
+	variable fu
 
-	stop
-	start $v_port $v_func
-	watchdog $v_port $v_func
+	pclose $chN
+	popen $chN
+	watchdog $chN
 
 	# generate first call
-	process_msg "" $v_func
+	set rsp($chN) ""
+	$fu($chN) "xtdaqu2.$chN"
 }
+
+
+# proc getx {self} { puts [$self decode] }
+# set chu [::DAQU::channel 1 getx]
+# $chu port "\\\\.\\COM1"
+# $chu open
+# after 500
+# $chu close

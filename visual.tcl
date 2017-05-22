@@ -50,13 +50,13 @@ label  .toolbar.dset1  -relief flat -text "1" -state disabled
 label  .toolbar.dset2  -relief flat -text "2" -state disabled
 label  .toolbar.dset3  -relief flat -text "3" -state disabled
 label  .toolbar.dset4  -relief flat -text "4" -state disabled
-entry  .toolbar.dvolt  -relief sunken -textvariable datavolt -width 7
+entry  .toolbar.dvolt  -relief sunken -textvariable datavolt -width 10
 
 button .toolbar.open  -text "  Open" -relief flat -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file                -relief sunken                 -textvariable par(file) -width 26
 button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel par(file)}
-checkbutton .toolbar.shex -text "Show" -relief flat -variable vShowEx -command {showex $vShowEx}
+checkbutton .toolbar.shex -text "Show Status" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack   .toolbar.conn  -side left
 pack   .toolbar.port  -side left

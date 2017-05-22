@@ -174,7 +174,7 @@ proc data_process {t q dataI} {
 # preliminary data handler
 #
 
-proc data_dispatcher {clk chan volt bits} {
+proc data_dispatcher {self} {
 	global StartT
 	global Qprev
 	global Tprev
@@ -186,6 +186,10 @@ proc data_dispatcher {clk chan volt bits} {
 
 	global dataTm
 	global datavolt
+
+	set clk [clock seconds]
+	foreach {chan volt bits} [$self decode] {break}
+	if {![info exists bits]} {return}
 
 	# ignore $chan, read bits
 	set quvette [switch $bits 7 {expr {1}}  11 {expr {2}}  13 {expr {3}}  14 {expr {4}} default {expr {0}}]

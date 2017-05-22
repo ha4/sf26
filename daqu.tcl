@@ -78,11 +78,11 @@ proc ::DAQU::port_in {chN} {
 
         if {[eof $fd($chN)]} { return }
 #	set rd [read $fd($chN)]
-	     if {[catch {set rd [read $fd($chN)]} errx]} {
+	if {[catch {set rd [read $fd($chN)]} errx]} {
 	# error
-		puts "read error: $errx"
-		return
-	     }
+	    puts "read error: $errx"
+	    return
+	}
 
 	foreach ch [split $rd {}] {
 	  switch -regexp $ch {
@@ -92,7 +92,7 @@ proc ::DAQU::port_in {chN} {
 		$fu($chN) "xtdaqu2.$chN"
 		set rsp($chN) ""
  		}
-          default { append rsp($chN) $rd }
+          default { append rsp($chN) $ch }
 	  }
 	}
 }

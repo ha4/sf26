@@ -8,7 +8,7 @@ source daqu.tcl
 
 # The terminal bindings
 if {$tcl_platform(platform) == "windows" } {
-	set ConfPort "\\.\\\\COM1"
+	set ConfPort "\\\\.\\COM12"
 } else {
 	set ConfPort "/dev/ttyUSB0"
 }
@@ -102,7 +102,9 @@ proc cmd_clr {} {
 
 proc cmd_conn {} {
    global chu
+   global ConfPort
   
+   $chu port $ConfPort
    $chu restart
 }
 

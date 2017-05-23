@@ -14,6 +14,8 @@ source visual.tcl
 source commands.tcl
 source datapars.tcl
 source defaults.tcl
+source configsave.tcl
+
 set sf26cc_version "3.0"
 set sf26cc_date "20170522"
 
@@ -23,6 +25,8 @@ frames
 catch {console hide}
 raise .
 
+catch {source $config_file}
+
 set chu [::DAQU::channel 1 data_dispatcher]
-$chu port $par(port)
+$chu port $config_port
 catch {$chu open}

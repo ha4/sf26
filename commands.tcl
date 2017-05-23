@@ -12,9 +12,11 @@ catch {console show}
 }
 
 proc cmd_exit {} {
+  global config_file config_vars
   set retc [tk_messageBox -message "Really exit?" -type yesno -icon warning -title "SF-26 Exit"]
-  switch -- $retc {
-     yes  exit
+  if {$retc == yes} {
+     config_save $config_file $config_vars
+     exit
   }
 }
 
@@ -36,19 +38,19 @@ proc cmd_close {} {
 proc cmd_open {} {
 
    global  dumpfl
-   global  par
+   global  config_logfile
 
    if {[info exist dumpfl]} {
 	cmd_close
 	return
    }
 
-   if {[file exist $par(file)]} {
+   if {[file exist $config_logfile]} {
      set retc [tk_messageBox -message "File EXIST.\n Overwrite??" -type yesno -icon warning -title "Data File Overwrite"]
      if { $retc != "yes" } { return }
    }
 
-   set dumpfl [open $par(file) w+]
+   set dumpfl [open $config_logfile w+]
    .toolbar.open configure -text "  Close"
 }
 
@@ -65,10 +67,10 @@ proc cmd_cell {} {
 }
 
 proc cmd_conn {} {
-   global par
+   global config_port
    global chu
 
-   $chu port $par(port)
+   $chu port $config_port
    $chu restart
 }
 

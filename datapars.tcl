@@ -56,12 +56,15 @@ proc chk_incr {v} {
 
 
 proc q2name {q} {
-	global par
+	global par_srcin
+	global par_srcout
+	global par_srcd
+	global par_srccal
 
-	if {$q == $par(srcin)}  { return srcin  }
-	if {$q == $par(srcout)} { return srcout }
-	if {$q == $par(srcd)}   { return srcd   }
-	if {$q == $par(srccal)} { return srccal }
+	if {$q == $par_srcin}  { return srcin  }
+	if {$q == $par_srcout} { return srcout }
+	if {$q == $par_srcd}   { return srcd   }
+	if {$q == $par_srccal} { return srccal }
 
 	return none
 }
@@ -81,12 +84,19 @@ proc t2d {t} {
 
 # -- DATASET variables
 # dataDi dataDo dataTm   dataTd dataTi dataTo dataTc dataTk
-# -- PARAMETERS variables
-# par(sskip) par(srcd) par(srcin) par(srcout) par(srccal) par(setcal) par(ticorr) par(tocorr) par(alpha)
 
 # time, quvette number, intensity%
 proc data_process {t q dataI} {
-	global par
+	global config_tplot
+	global par_srcd
+	global par_srcin
+	global par_srcout
+	global par_srccal
+	global par_setcal
+	global par_ticorr
+	global par_tocorr
+	global par_alpha
+
 
 	global fil0
 	global filk
@@ -120,36 +130,36 @@ proc data_process {t q dataI} {
 #	Tomax=flt(alpha,T-Td) if src-out and 0-correction
 
 	if {$inq == "srcd"} {
-		set dataTd [smooth_a $dataI $par(alpha) fil0]
+		set dataTd [smooth_a $dataI $par_alpha fil0]
 	} else {
 		set dataI [expr $dataI-$dataTd]
 	}
 
 	if {$inq == "srcin"} {
 		if {$dataCAL} {
-			set par(ticorr) [smooth_a $dataI $par(alpha) fil1] 
+			set par_ticorr [smooth_a $dataI $par_alpha fil1] 
 		}
-		set dataI  [expr $dataTk*$dataI*100.0/$par(ticorr)]
+		set dataI  [expr $dataTk*$dataI*100.0/$par_ticorr]
 		set dataTi $dataI
 		set dataDi [t2d $dataI]
 	}
 		
 	if {$inq == "srcout"} {
 		if {$dataCAL} {
-			set par(tocorr) [smooth_a $dataI $par(alpha) fil1] 
+			set par_tocorr [smooth_a $dataI $par_alpha fil1] 
 		}
-		set dataI [expr $dataTk*$dataI*100.0/$par(tocorr)]
+		set dataI [expr $dataTk*$dataI*100.0/$par_tocorr]
 		set dataTo $dataI
 		set dataDo [t2d $dataI]
 	}
 
-        if {$inq == "srccal"} { set dataTc [smooth_a $dataI $par(alpha) filk] }
+        if {$inq == "srccal"} { set dataTc [smooth_a $dataI $par_alpha filk] }
         if {$dataCORR} {
-	  switch $inq srccal - srcd { set dataTk [expr $dataTc/$par(setcal)] }
+	  switch $inq srccal - srcd { set dataTk [expr $dataTc/$par_setcal] }
 	}
 
 # plot	different type with different plot
-	if {$par(tplot) == "d"} {
+	if {$config_tplot == "d"} {
 		switch $inq {
 		srcin  { $chart $t $dataDi $dset }
 		srcout { $chart $t $dataDo $dset }
@@ -181,7 +191,7 @@ proc data_dispatcher {self} {
 	global fil
 	global fil1
 
-	global par
+	global par_sskip
 	global skippedsmp
 
 	global dataTm
@@ -223,7 +233,7 @@ proc data_dispatcher {self} {
 	if {$quvette == 0} { return }
 
 # data stablilizer
-	if { [chk_incr skippedsmp] < $par(sskip) } { return }
+	if { [chk_incr skippedsmp] < $par_sskip } { return }
 
 # convert to Intensity%
 	set ul [expr $ul*100.0]

@@ -19,7 +19,7 @@ menu .mbar.dat -tearoff 0
 .mbar add cascade -menu .mbar.dat -label Data -underline 0
 .mbar add command -label About -underline 0 -command { cmd_about }
 
-.mbar.fl add command -label "Save as.." -command { cmd_fsel par(file) }
+.mbar.fl add command -label "Save as.." -command { cmd_fsel config_logfile }
 .mbar.fl add command -label "Capture"   -command { cmd_open }
 .mbar.fl add command -label "Stop"      -command { cmd_close }
 .mbar.fl add command -label "Console"   -command { cmd_cons }
@@ -27,8 +27,8 @@ menu .mbar.dat -tearoff 0
 .mbar.fl add command -label Exit -command { cmd_exit }
 
 .mbar.plt add command -label "Clear" -command { cmd_clear }
-.mbar.plt add radiobutton -label "Plot Transition %" -value "t" -variable par(tplot)    -command { cmd_clear }
-.mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable par(tplot) -command { cmd_clear }
+.mbar.plt add radiobutton -label "Plot Transition %" -value "t" -variable config_tplot    -command { cmd_clear }
+.mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable config_tplot -command { cmd_clear }
 
 .mbar.dat add command -label "Connect" -command { cmd_conn }
 .mbar.dat add checkbutton -label "Cell T100% correction" -onvalue 1 -offvalue 0 -variable dataCAL -command {unset -nocomplain fil1}
@@ -44,7 +44,7 @@ frame .toolbar2 -bd 2 -relief flat
 
 # An exit button with a text
 button .toolbar.conn  -text "Connect" -relief flat -overrelief raised -command {cmd_conn}
-entry  .toolbar.port                -relief sunken                 -textvariable par(port) -width 10
+entry  .toolbar.port                -relief sunken                 -textvariable config_port -width 10
 
 label  .toolbar.dset1  -relief flat -text "1" -state disabled
 label  .toolbar.dset2  -relief flat -text "2" -state disabled
@@ -54,8 +54,8 @@ entry  .toolbar.dvolt  -relief sunken -textvariable datavolt -width 10
 
 button .toolbar.open  -text "  Open" -relief flat -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
-entry  .toolbar.file                -relief sunken                 -textvariable par(file) -width 26
-button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel par(file)}
+entry  .toolbar.file                -relief sunken                 -textvariable config_logfile -width 26
+button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
 checkbutton .toolbar.shex -text "Show Status" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack   .toolbar.conn  -side left
@@ -87,15 +87,15 @@ entry  .toolbar2.vTout -text 0     -relief sunken -textvariable dataTo -width 6
 entry  .toolbar2.vTc   -text 0     -relief sunken -textvariable dataTc -width 6
 entry  .toolbar2.vCk   -text 0     -relief sunken -textvariable dataTk -width 6
 
-entry  .toolbar2.nSk      -relief sunken -textvariable par(sskip) -width 3
-entry  .toolbar2.nSd      -relief sunken -textvariable par(srcd) -width 3
-entry  .toolbar2.nSin     -relief sunken -textvariable par(srcin) -width 3
-entry  .toolbar2.nSout    -relief sunken -textvariable par(srcout) -width 3
-entry  .toolbar2.nSc      -relief sunken -textvariable par(srccal) -width 3
-entry  .toolbar2.vC       -relief sunken -textvariable par(setcal) -width 6
-entry  .toolbar2.vTinmax  -relief sunken -textvariable par(ticorr) -width 6
-entry  .toolbar2.vToutmax -relief sunken -textvariable par(tocorr) -width 6
-entry  .toolbar2.vAlpha   -relief sunken -textvariable par(alpha) -width 5
+entry  .toolbar2.nSk      -relief sunken -textvariable par_sskip -width 3
+entry  .toolbar2.nSd      -relief sunken -textvariable par_srcd -width 3
+entry  .toolbar2.nSin     -relief sunken -textvariable par_srcin -width 3
+entry  .toolbar2.nSout    -relief sunken -textvariable par_srcout -width 3
+entry  .toolbar2.nSc      -relief sunken -textvariable par_srccal -width 3
+entry  .toolbar2.vC       -relief sunken -textvariable par_setcal -width 6
+entry  .toolbar2.vTinmax  -relief sunken -textvariable par_ticorr -width 6
+entry  .toolbar2.vToutmax -relief sunken -textvariable par_tocorr -width 6
+entry  .toolbar2.vAlpha   -relief sunken -textvariable par_alpha -width 5
 
 # -xscrollincrement 1
 #    -scrollregion {0 0 80000 0} 
@@ -154,6 +154,7 @@ set ::AutoPlotM::plotcols(setsrcout)  darkred
 set ::AutoPlotM::plotcols(setsrcd)  darkgrey
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
+wm protocol . WM_DELETE_WINDOW { .mbar.fl invoke Exit }
 }
 
 # --------------------

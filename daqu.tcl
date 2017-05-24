@@ -10,7 +10,7 @@ namespace eval ::DAQU {
 	variable fu
 	variable daqredo
 
-	namespace export channel cmd req popen pclose restart
+	namespace export channel cmd req popen pclose restart status
 # port_cmd -> req, start->popem, stop->pclose
 }
 
@@ -44,7 +44,17 @@ proc ::DAQU::cmd {chN v args} {
 	decode { ::DAQU::decode $rsp($chN) }
 	rsp  { return $rsp($chN) }
 	chN { return $chN }
+	status { return [::DAQU::status $chN]}
 	}
+}
+
+proc ::DAQU::status {chN} {
+	variable fd
+
+	if {![info exists fd($chN)]} {return "deleted"}
+	if {$fd($chN) == ""} { return "disconnected" }
+	if {[eof $fd($chN)]} { return "error" }
+	return "connected"
 }
 
 
@@ -113,17 +123,25 @@ proc ::DAQU::port {chN p} {
 
 proc ::DAQU::popen {chN} {
 	variable fd
+	variable fu
+	variable rsp
 	variable port
 
 	if {$fd($chN) != ""} { pclose $chN }
 
-	if {[catch {set fd($chN) [open $port($chN) r+]}]} { return }
+	if {![catch {set fd($chN) [open $port($chN) r+]}]} {
 
-	fconfigure $fd($chN) -mode 9600,n,8,1 -translation binary \
+	  fconfigure $fd($chN) -mode 9600,n,8,1 -translation binary \
             -buffering none -blocking 0
 
 #	after 500
-	fileevent $fd($chN) readable [list ::DAQU::port_in $chN]
+	  fileevent $fd($chN) readable [list ::DAQU::port_in $chN]
+	}
+	watchdog $chN
+
+# generate first call
+	set rsp($chN) ""
+	$fu($chN) $chN
 }
 
 proc ::DAQU::pclose {chN} {
@@ -133,7 +151,7 @@ proc ::DAQU::pclose {chN} {
 	if { [info exists daqredo($chN)] } { after cancel $daqredo($chN) }
 
 	catch {close $fd($chN)}
-	set $fd($chN) ""
+	set fd($chN) ""
 }
 
 proc ::DAQU::watchdog {chN} {
@@ -144,16 +162,8 @@ proc ::DAQU::watchdog {chN} {
 }
 
 proc ::DAQU::restart {chN} {
-	variable rsp
-	variable fu
-
 	pclose $chN
 	popen $chN
-	watchdog $chN
-
-	# generate first call
-	set rsp($chN) ""
-	$fu($chN) $chN
 }
 
 

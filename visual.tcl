@@ -200,3 +200,11 @@ proc showex {showit} {
 	   pack forget .toolbar2
 	}
 }
+
+proc showstatus {s} {
+  if {$s != "connected"} {
+	.toolbar.port configure -bg pink
+  } else {
+	.toolbar.port configure -bg [. cget -background]
+  }
+}

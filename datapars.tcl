@@ -199,7 +199,10 @@ proc data_dispatcher {self} {
 
 	set clk [clock seconds]
 	foreach {chan volt bits} [$self decode] {break}
-	if {![info exists bits]} {return}
+	if {![info exists bits]} {
+	   showstatus [$self status]
+	   return
+	}
 
 	# ignore $chan, read bits
 	set quvette [switch $bits 7 {expr {1}}  11 {expr {2}}  13 {expr {3}}  14 {expr {4}} default {expr {0}}]

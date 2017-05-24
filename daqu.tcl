@@ -15,17 +15,19 @@ namespace eval ::DAQU {
 }
 
 
-proc ::DAQU::channel {chN funct } {
+proc ::DAQU::channel {chN funct} {
 	variable fd
 	variable fu
 
-	set newchan "xtdaqu2.$chN"
-	interp alias {} $newchan {} ::DAQU::cmd $chN
+	if {[info exists fd($chN)]} {return [list] }
 
+	interp alias {} $chN {} ::DAQU::cmd $chN
+
+	set rsp($chN) ""
 	set fd($chN) ""
 	set fu($chN) $funct
 
-	return $newchan
+	return $chN
 }
 
 
@@ -34,7 +36,7 @@ proc ::DAQU::cmd {chN v args} {
 	variable rsp
 
 	switch $v {
-	req  { ::DAQU::req $chN }
+	req  { ::DAQU::req $chN {*}$args}
 	port { ::DAQU::port $chN {*}$args}
 	open { ::DAQU::popen $chN }
 	close { ::DAQU::pclose $chN }
@@ -46,7 +48,7 @@ proc ::DAQU::cmd {chN v args} {
 }
 
 
-proc ::DAQU::req {cmd} {
+proc ::DAQU::req {chN cmd} {
 	variable fd
 	variable rsp
 
@@ -89,7 +91,7 @@ proc ::DAQU::port_in {chN} {
           \x07 { }
           [\x0A\x0D] {
 		watchdog $chN
-		$fu($chN) "xtdaqu2.$chN"
+		$fu($chN) $chN
 		set rsp($chN) ""
  		}
           default { append rsp($chN) $ch }
@@ -151,13 +153,15 @@ proc ::DAQU::restart {chN} {
 
 	# generate first call
 	set rsp($chN) ""
-	$fu($chN) "xtdaqu2.$chN"
+	$fu($chN) $chN
 }
 
 
 # proc getx {self} { puts [$self decode] }
-# set chu [::DAQU::channel 1 getx]
+# set chu [::DAQU::channel chu1 getx]
 # $chu port "\\\\.\\COM1"
 # $chu open
 # after 500
 # $chu close
+# #or# chu1 close
+

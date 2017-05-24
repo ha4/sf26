@@ -68,10 +68,9 @@ proc cmd_cell {} {
 
 proc cmd_conn {} {
    global config_port
-   global chu
 
-   $chu port $config_port
-   $chu restart
+   chu port $config_port
+   chu restart
 }
 
 proc cmd_fsel {fvar} {

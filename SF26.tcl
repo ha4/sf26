@@ -27,6 +27,6 @@ raise .
 
 catch {source $config_file}
 
-set chu [::DAQU::channel 1 data_dispatcher]
-$chu port $config_port
-catch {$chu open}
+::DAQU::channel chu data_dispatcher
+chu port $config_port
+catch {chu open}

@@ -151,7 +151,7 @@ set ::AutoPlotM::plotcols(set3)  pink
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
 
-set chu [::DAQU::channel 1 read_data]
+set chu [::DAQU::channel chu1 read_data]
 $chu port $ConfPort
 catch {$chu open}
 

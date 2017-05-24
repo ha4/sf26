@@ -36,7 +36,6 @@ menu .mbar.dat -tearoff 0
 
 frame .toolbar -bd 2 -relief flat
 
-frame .toolbar2 -bd 2 -relief flat
 
 # An exit button with an image is created.
 # image create photo img -file "exit.png"
@@ -56,7 +55,7 @@ button .toolbar.open  -text "  Open" -relief flat -overrelief raised -command {c
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file                -relief sunken                 -textvariable config_logfile -width 26
 button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
-checkbutton .toolbar.shex -text "Show Status" -relief flat -variable vShowEx -command {showex $vShowEx}
+checkbutton .toolbar.shex -text "Show Data" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack   .toolbar.conn  -side left
 pack   .toolbar.port  -side left
@@ -76,6 +75,43 @@ pack   .toolbar.shex  -side left
 # pack   .toolbar.clrButton  -side left -padx 2 -pady 2
 # pack   .toolbar.consButton -side left -padx 2 -pady 2
 
+pack .toolbar -fill x -expand false
+
+canvas .t.c -relief groove -bg beige
+
+# -xscrollincrement 1
+#    -scrollregion {0 0 80000 0} 
+
+#    -xscrollcommand [list .t.xscroll set] \
+#    -yscrollcommand [list .t.yscroll set] \
+
+# scrollbar .t.xscroll -orient horizontal \
+#     -command [list .t.c xview]
+# scrollbar .t.yscroll -orient vertical \
+#    -command [list .t.c yview]
+#
+# grid .t.c       .t.yscroll -sticky news
+# grid .t.xscroll x          -sticky news
+
+
+set chart [::AutoPlotM::create .t.c]
+set ::AutoPlotM::plotcols(setnone)  black
+set ::AutoPlotM::plotcols(setsrcin)  darkgreen
+set ::AutoPlotM::plotcols(setsrccal)  darkblue
+set ::AutoPlotM::plotcols(setsrcout)  darkred
+set ::AutoPlotM::plotcols(setsrcd)  darkgrey
+
+grid .t.c -sticky news
+grid rowconfigure    .t 0 -weight 1
+grid columnconfigure .t 0 -weight 1
+
+pack .t -side top -fill both -expand true
+
+setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
+wm protocol . WM_DELETE_WINDOW { .mbar.fl invoke Exit }
+
+
+toplevel .toolbar2 -bd 2 -relief flat
 
 entry  .toolbar2.vDin  -text 0     -relief sunken -textvariable dataDi -width 6
 entry  .toolbar2.vDout -text 0     -relief sunken -textvariable dataDo -width 6
@@ -97,64 +133,35 @@ entry  .toolbar2.vTinmax  -relief sunken -textvariable par_ticorr -width 6
 entry  .toolbar2.vToutmax -relief sunken -textvariable par_tocorr -width 6
 entry  .toolbar2.vAlpha   -relief sunken -textvariable par_alpha -width 5
 
-# -xscrollincrement 1
-#    -scrollregion {0 0 80000 0} 
-
-#    -xscrollcommand [list .t.xscroll set] \
-#    -yscrollcommand [list .t.yscroll set] \
-
-canvas .t.c -relief groove \
-          -xscrollincrement 1 -bg beige
-
-# scrollbar .t.xscroll -orient horizontal \
-#     -command [list .t.c xview]
-# scrollbar .t.yscroll -orient vertical \
-#    -command [list .t.c yview]
-#
-# grid .t.c       .t.yscroll -sticky news
-# grid .t.xscroll x          -sticky news
-
 # The toolbar is packed to the root window. It is horizontally stretched.
-pack .toolbar -fill x -expand false
+grid   [label .toolbar2.lp1 -an center -text "Current values"] - -sticky ew -padx 4
+grid   [label .toolbar2.lTm -an e -text "time"] .toolbar2.vTm -sticky ew -padx 4
+grid   [label .toolbar2.lDi -an e -text "Din"] .toolbar2.vDin -sticky ew -padx 4
+grid   [label .toolbar2.lDo -an e -text "Dout"] .toolbar2.vDout -sticky ew -padx 4
+grid   [hr .toolbar2.hr1] - -sticky ew -padx 4 -pady 5
+grid   [label .toolbar2.lp2 -an center -text "Current parameters"] - -sticky ew -padx 4
+grid   [label .toolbar2.lTd -an e -text "T% dark"] .toolbar2.vTd  -sticky ew -padx 4
+grid   [label .toolbar2.lTi -an e -text "Tin%"]     .toolbar2.vTin -sticky ew -padx 4
+grid   [label .toolbar2.lTo -an e -text "Tout%"]     .toolbar2.vTout -sticky ew -padx 4
+grid   [label .toolbar2.lTc -an e -text "T% corr"] .toolbar2.vTc  -sticky ew -padx 4
+grid   [label .toolbar2.lTcc -an e -text "T%koeff"] .toolbar2.vCk -sticky ew -padx 4
+grid   [hr .toolbar2.hr2]  - -sticky ew -padx 4 -pady 5
+grid   [label .toolbar2.lp3 -an center -text "Setup parameters"] - -sticky ew -padx 4
+grid   [label .toolbar2.lsk -an e -text "Skip samples"] .toolbar2.nSk -sticky ew -padx 4
+grid   [label .toolbar2.lSd -an e -text "Dark src"] .toolbar2.nSd  -sticky ew -padx 4
+grid   [label .toolbar2.lSi -an e -text "IN src"]  .toolbar2.nSin  -sticky ew -padx 4
+grid   [label .toolbar2.lSo -an e -text "OUT src"]  .toolbar2.nSout -sticky ew -padx 4
+grid   [label .toolbar2.lSc -an e -text "Corr src"] .toolbar2.nSc  -sticky ew -padx 4
+grid   [label .toolbar2.lCv -an e -text "Corr T%"]  .toolbar2.vC  -sticky ew -padx 4
+grid   [label .toolbar2.lCti -an e -text "TinCorr"]  .toolbar2.vTinmax -sticky ew -padx 4
+grid   [label .toolbar2.lCto -an e -text "ToutCorr"]  .toolbar2.vToutmax -sticky ew -padx 4
+grid   [label .toolbar2.lAlph -an e -text "SmoothAlpha"]  .toolbar2.vAlpha -sticky ew -padx 4
 
-grid .t.c -sticky news
-grid rowconfigure    .t 0 -weight 1
-grid columnconfigure .t 0 -weight 1
+#grid columnconfigure    .toolbar2 0 -weight 1
+grid columnconfigure    .toolbar2 1 -weight 1
 
-grid   [label .toolbar2.lTm -text "  time"] .toolbar2.vTm 
-grid   [label .toolbar2.lDi -text "   Din"] .toolbar2.vDin
-grid   [label .toolbar2.lDo -text "  Dout"] .toolbar2.vDout
-grid   [hr .toolbar2.hr1]  -sticky we -columnspan 2 -padx 6 -pady 6
-grid   [label .toolbar2.lTd -text "  T% dark"] .toolbar2.vTd 
-grid   [label .toolbar2.lTi -text "   Tin%"]     .toolbar2.vTin
-grid   [label .toolbar2.lTo -text "  Tout%"]     .toolbar2.vTout
-grid   [label .toolbar2.lTc -text "  T% corr"] .toolbar2.vTc 
-grid   [label .toolbar2.lTcc -text " T%koeff"] .toolbar2.vCk
-grid   [hr .toolbar2.hr2]  -sticky we -columnspan 2 -padx 6 -pady 6
-grid   [label .toolbar2.lsk -text "Skip samples"] .toolbar2.nSk
-grid   [label .toolbar2.lSd -text "  Dark src"] .toolbar2.nSd 
-grid   [label .toolbar2.lSi -text "    IN src"]  .toolbar2.nSin 
-grid   [label .toolbar2.lSo -text "   OUT src"]  .toolbar2.nSout
-grid   [label .toolbar2.lSc -text "  Corr src"] .toolbar2.nSc 
-grid   [label .toolbar2.lCv -text "  Corr T%"]  .toolbar2.vC 
-grid   [label .toolbar2.lCti -text "   TinCorr"]  .toolbar2.vTinmax
-grid   [label .toolbar2.lCto -text "  ToutCorr"]  .toolbar2.vToutmax
-grid   [label .toolbar2.lAlph -text "SmoothAlpha"]  .toolbar2.vAlpha
+# pack .toolbar2 -side top -fill y
 
-pack .t -side top -fill both -expand true
-
-pack .toolbar2 -side top -fill y
-
-
-set chart [::AutoPlotM::create .t.c]
-set ::AutoPlotM::plotcols(setnone)  black
-set ::AutoPlotM::plotcols(setsrcin)  darkgreen
-set ::AutoPlotM::plotcols(setsrccal)  darkblue
-set ::AutoPlotM::plotcols(setsrcout)  darkred
-set ::AutoPlotM::plotcols(setsrcd)  darkgrey
-
-setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
-wm protocol . WM_DELETE_WINDOW { .mbar.fl invoke Exit }
 }
 
 # --------------------
@@ -194,10 +201,17 @@ proc show_dset {n} {
 }
 
 proc showex {showit} {
+	global vShowEx
+
 	if { $showit } {
-	   pack .toolbar2 -side right -fill y
+	   wm manage .toolbar2
+	   wm protocol .toolbar2 WM_DELETE_WINDOW { showex 0 }
+	   wm attributes .toolbar2 -topmost 1
+	   wm title .toolbar2 "Extended data"
+	   set vShowEx 1
 	} else {
-	   pack forget .toolbar2
+	   wm forget .toolbar2
+	   set vShowEx 0
 	}
 }
 

@@ -39,7 +39,7 @@ proc cmd_close {} {
 	unset dumpfl
 	close $m
 
-	setbutton "Recording"
+	setbutton "Record"
 }
 
 proc cmd_open {} {
@@ -58,7 +58,7 @@ proc cmd_open {} {
 	}
 
 	set dumpfl [open $config_logfile w+]
-	setbutton "Stop Rec."
+	setbutton "Stop Rec"
 }
 
 proc cmd_clr {} {

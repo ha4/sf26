@@ -28,7 +28,9 @@ set dataTi 0
 set dataTo 0
 set dataTc $par_setcal
 set dataTk 1.0
+# quvette correction
 set dataCAL 0
+# span/zero auto correction
 set dataCORR 1
 
 # -- PLOT/SAVE variables

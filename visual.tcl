@@ -5,6 +5,7 @@ proc hr {w} {frame $w -height 2 -borderwidth 1 -relief sunken}
 
 proc frames {} {
 global chart
+global sysbg
 wm title . "SF-26"
 wm protocol . WM_DELETE_WINDOW { .mbar.fl invoke Exit }
 menu  .mbar
@@ -31,8 +32,8 @@ menu .mbar.dat -tearoff 0
 .mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable config_tplot -command { cmd_clear }
 
 .mbar.dat add command -label "Connect" -command { cmd_conn }
-.mbar.dat add checkbutton -label "Cell T100% correction" -onvalue 1 -offvalue 0 -variable dataCAL -command {unset -nocomplain fil1}
-.mbar.dat add checkbutton -label "Auto corrections" -onvalue 1 -offvalue 0 -variable dataCORR
+.mbar.dat add checkbutton -label "Quvette corrections" -onvalue 1 -offvalue 0 -variable dataCAL
+.mbar.dat add checkbutton -label "Scale corrections" -onvalue 1 -offvalue 0 -variable dataCORR
 
 frame .toolbar -bd 2 -relief flat
 canvas .c -relief groove -bg beige
@@ -58,7 +59,7 @@ entry  .toolbar.din   -relief sunken -textvariable dataDi -width 10
 label  .toolbar.l2 -text "OUT"
 entry  .toolbar.dout  -relief sunken -textvariable dataDo -width 10
 
-button .toolbar.open  -text "Record" -relief raised -overrelief raised -command {cmd_open}
+button .toolbar.open  -text "Record" -width 8 -relief raised -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file                -relief sunken                 -textvariable config_logfile -width 26
 button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
@@ -83,7 +84,7 @@ pack   .toolbar.open  -side left -ipadx 10 -padx 4 -anchor center
 pack   .toolbar.anim  -side left
 pack   .toolbar.file  -side left
 pack   .toolbar.fsel  -side left
-pack   .toolbar.shex  -side left
+pack   .toolbar.shex  -side right
 
 # pack   .toolbar.exitButton -side left -padx 2 -pady 2
 # pack   .toolbar.clrButton  -side left -padx 2 -pady 2
@@ -112,12 +113,13 @@ pack .toolbarl -fill x -expand false
 
 set chart [::AutoPlotM::create .c]
 set ::AutoPlotM::plotcols(setnone)  black
-set ::AutoPlotM::plotcols(setsrcin)  darkgreen
-set ::AutoPlotM::plotcols(setsrccal)  darkblue
-set ::AutoPlotM::plotcols(setsrcout)  darkred
+set ::AutoPlotM::plotcols(setsrcin)  darkblue
+set ::AutoPlotM::plotcols(setsrccal)  darkred
+set ::AutoPlotM::plotcols(setsrcout)  darkgreen
 set ::AutoPlotM::plotcols(setsrcd)  darkgrey
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50} 1
+set sysbg [.toolbarl.port cget -bg]
 
 
 toplevel .toolbar2 -bd 2 -relief flat
@@ -228,16 +230,22 @@ proc showex {showit} {
 }
 
 proc showstatus {s} {
+	global sysbg
 	if {$s != "connected"} {
 		.toolbarl.port configure -bg pink
 	} else {
-		.toolbarl.port configure -bg [. cget -background]
+		.toolbarl.port configure -bg $sysbg
 	}
 }
 
 proc setbutton {s} {
-	.toolbar.open configure -text $c
+	.toolbar.open configure -text $s
 }
 
 proc inputdata {s} {
+	global sysbg
+	if {$s=="srcin"}  { .toolbar2.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .toolbar2.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
+	if {$s=="srcout"} { .toolbar2.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .toolbar2.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
+	if {$s=="srccal"} { .toolbar2.vTc configure -bg IndianRed1} else { .toolbar2.vTc configure -bg $sysbg}
+	if {$s=="srcd"}   { .toolbar2.vTd configure -bg lightgray } else { .toolbar2.vTd configure -bg $sysbg}
 }

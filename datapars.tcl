@@ -173,6 +173,7 @@ proc data_process {t q dataI} {
 #
 
 proc data_dispatcher {self} {
+# unset -nocomplain fil1 #?? on dataCAL start
 	global StartT
 	global Qprev
 	global Tprev
@@ -205,6 +206,7 @@ proc data_dispatcher {self} {
 		set skippedsmp 0
 		lowpass_avg_clean fil
 		unset -nocomplain fil1
+		inputdata [q2name $quvette]
 		return
 	} 
 

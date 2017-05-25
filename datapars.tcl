@@ -42,19 +42,7 @@ proc chk_change {v x} {
 	}
 }
 
-# create or increment counter and return it
-proc chk_incr {v} {
-	upvar $v cnt
-
-	if { [info exist cnt] } {
-		incr cnt
-	} else {
-		set cnt 0
-	}
-	return $cnt
-}
-
-
+# quvette name translation
 proc q2name {q} {
 	global par_srcin
 	global par_srcout
@@ -175,7 +163,7 @@ proc data_process {t q dataI} {
 		"srcout" { puts $dumpfl "$t * $dataDo" } 
 		default  { puts $dumpfl "$t * *" }  }
 
-  	 	animate .toolbar.anim 0
+  	 	animate
 	}
 }
 
@@ -236,7 +224,7 @@ proc data_dispatcher {self} {
 	if {$quvette == 0} { return }
 
 # data stablilizer
-	if { [chk_incr skippedsmp] < $par_sskip } { return }
+	if { [incr skippedsmp] < $par_sskip } { return }
 
 # convert to Intensity%
 	set ul [expr $ul*100.0]

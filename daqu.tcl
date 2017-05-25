@@ -11,7 +11,7 @@ namespace eval ::DAQU {
 	variable daqredo
 
 	namespace export channel cmd req popen pclose restart status
-# port_cmd -> req, start->popem, stop->pclose
+# port_cmd -> req, start->popen, stop->pclose
 }
 
 

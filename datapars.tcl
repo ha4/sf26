@@ -1,46 +1,6 @@
 # --------------------
 # -- DATA HANDLING
 
-#
-# variable modify routines
-#
-
-# set only first time
-proc chk_const {v x} {
-	upvar $v k
-
-	if {[info exist k]} {
-		return 0
-	} else {
-		set k $x
-		return 1
-	}
-}
-
-# set and check if value new or updated
-proc chk_set {v x} {
-	upvar $v k
-
-	if { [info exist k] && $k == $x } {
-		return 0
-	} else {
-		set k $x
-		return 1
-	}
-}
-
-# set and check if different value
-proc chk_change {v x} {
-	upvar $v k
-
-	if {(![info exist k]) || $k == $x} {
-		set k $x
-		return 0
-	} else {
-		set k $x
-		return 1
-	}
-}
 
 # quvette name translation
 proc q2name {q} {
@@ -66,47 +26,6 @@ proc t2d {t} {
 	return 5.0
 }
 
-# 
-# main data handler
-#
-
-# -- DATASET variables
-# dataDi dataDo dataTm   dataTd dataTi dataTo dataTc dataTk
-
-# time, quvette number, intensity%
-proc data_process {t q dataI} {
-	global config_tplot
-	global par_srcd
-	global par_srcin
-	global par_srcout
-	global par_srccal
-	global par_setcal
-	global par_ticorr
-	global par_tocorr
-	global par_alpha
-
-
-	global fil0
-	global filk
-	global fil1
-	global dataCAL
-	global dataCORR
-
-	global chart
-	global dumpfl
-
-	global dataTd
-	global dataTc
-	global dataTk
-
-	global dataTi
-	global dataTo
-	global dataDi
-	global dataDo
-
-# preleminary
-	set inq [q2name $q]
-	set dset "set$inq"
 
 # weird calculation here: 
 #       Tin= Tk*(T - Td)/Timax if src-in
@@ -117,120 +36,175 @@ proc data_process {t q dataI} {
 #	Timax=flt(alpha,T-Td) if src-in  and 0-correction
 #	Tomax=flt(alpha,T-Td) if src-out and 0-correction
 
-	if {$inq == "srcd"} {
-		set dataTd [smooth_a $dataI $par_alpha fil0]
-	} else {
-		set dataI [expr $dataI-$dataTd]
-	}
 
-	if {$inq == "srcin"} {
-		if {$dataCAL} {
-			set par_ticorr [smooth_a $dataI $par_alpha fil1] 
-		}
-		set dataI  [expr $dataTk*$dataI*100.0/$par_ticorr]
-		set dataTi $dataI
-		set dataDi [t2d $dataI]
-	}
-		
-	if {$inq == "srcout"} {
-		if {$dataCAL} {
-			set par_tocorr [smooth_a $dataI $par_alpha fil1] 
-		}
-		set dataI [expr $dataTk*$dataI*100.0/$par_tocorr]
-		set dataTo $dataI
-		set dataDo [t2d $dataI]
-	}
+# 
+# main data handler
+#
 
-        if {$inq == "srccal"} { set dataTc [smooth_a $dataI $par_alpha filk] }
-        if {$dataCORR} {
-	  switch $inq srccal - srcd { set dataTk [expr $dataTc/$par_setcal] }
-	}
+proc data_out {t in out} {
+	global config_tplot
+	global chart
+	global dumpfl
 
-# plot	different type with different plot
-	if {$config_tplot == "d"} {
-		switch $inq {
-		srcin  { $chart $t $dataDi $dset }
-		srcout { $chart $t $dataDo $dset }
-		}
-	} else {
-		$chart $t $dataI  $dset
-	}
+	if {$config_tplot == "d" && $in != "*"}  {$chart $t $in  "setsrcin"}
+	if {$config_tplot == "d" && $out != "*"} {$chart $t $out "setsrcout"}
 
 # store to file
         if {[info exist dumpfl]} {
-		switch -- $inq {
-		"srcin"  { puts $dumpfl "$t $dataDi *" } 
-		"srcout" { puts $dumpfl "$t * $dataDo" } 
-		default  { puts $dumpfl "$t * *" }  }
-
+		puts $dumpfl "$t $in $out" 
   	 	animate
 	}
 }
 
+# time, source quvette, transition%
+proc data_processL4 {t src trans} {
+	global par_ticorr
+	global par_tocorr
+	global fil1
+	global par_alpha
+	global dataCAL
+
+	global dataTi
+	global dataTo
+	global dataDi
+	global dataDo
+
+	if {$src == "srcin"} {
+		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
+		set dataTi [expr $trans*100.0/$par_ticorr]
+		set dataDi [t2d $dataTi]
+		return [list $t $dataDi "*"]
+	}
+		
+	if {$src == "srcout"} {
+		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
+		set dataTo [expr $trans*100.0/$par_tocorr]
+		set dataDo [t2d $dataTo]
+		return [list $t "*" $dataDo]
+	}
+
+	return [list]
+}
+
+# time, quvette number, intensity%
+proc data_processL3 {t s i} {
+	global chart
+	global config_tplot
+	global par_setcal
+	global par_alpha
+
+	global fil0
+	global fil1
+	global filk
+	global dataCAL
+	global dataCORR
+
+	global dataTd
+	global dataTc
+	global dataTk
+
+	inputdata $s
+	if {$s == "srcd"} {set dataTd [smooth_a $i $par_alpha fil0]}
+	if {$dataCORR} {set $i [expr $i-$dataTd]}
+
+        if {$s == "srccal"} {
+		set dataTc [smooth_a $i $par_alpha filk]
+		set dataTk [expr $dataTc/$par_setcal]
+	}
+
+	if {$dataCAL && $s == "srccal"} {
+		set par_setcal [smooth_a $dataTc $par_alpha fil1]
+	} else {
+		if {$dataCORR} {set $i [expr $i * $dataTk]}
+	}
+
+	if {$config_tplot == "t"} {$chart $t $i "set$s"}
+
+	switch $s srcin - srcout {return [list $t $s $i]} default {return [list]}
+}
+
 
 #
-# preliminary data handler
+# preliminary data handler Layer1
 #
 
-proc data_dispatcher {self} {
-# unset -nocomplain fil1 #?? on dataCAL start
+proc data_processL1 {self} {
+	global fil
+	global fil1
 	global StartT
 	global Qprev
 	global Tprev
-	global fil
-	global fil1
-
-	global par_sskip
 	global skippedsmp
 
-	global dataTm
-	global datavolt
 
 	set clk [clock seconds]
+
 	foreach {chan volt bits} [$self decode] {break}
 	if {![info exists bits]} {
 	   showstatus [$self status]
-	   return
+	   return [list]
 	}
 
 	# ignore $chan, read bits
-	set quvette [switch $bits 7 {expr {1}}  11 {expr {2}}  13 {expr {3}}  14 {expr {4}} default {expr {0}}]
+	set quvette [switch $bits 7 {expr {1}}  11 {expr {2}}  13 {expr {3}}  \
+		14 {expr {4}} default {expr {0}}]
 	lowpass_avg_put $volt fil
 
-	chk_const StartT $clk
+	if {![info exist StartT]} { set StartT $clk }
 	set t [expr $clk-$StartT]
+	if {(![info exist Tprev]) || $Tprev == $t} {
+		set Tprev $t
+		set timch 0
+	} else {
+		set Tprev $t
+		set timch 1
+	}
 
-	set timch [chk_change Tprev $t]
-
-	if { [chk_set Qprev $quvette] } {
+	if { ![info exist Qprev] || $Qprev != $quvette } {
+		set Qprev $quvette
 		set skippedsmp 0
 		lowpass_avg_clean fil
 		unset -nocomplain fil1
-		inputdata [q2name $quvette]
-		return
+		show_dset $quvette
+		return [list]
 	} 
 
 	# once per second
-	if {! $timch} { return }
-
-	# filter here
-	# if no data, exit here
-	set ul [lowpass_avg_get fil]
+	if {$timch} {
+		set u [lowpass_avg_get fil]
 		lowpass_avg_clean fil
+		return [list $t $quvette $u]
+	}
+	return [list]
+}
+
+#
+# data handler Layer2
+#
+
+proc data_processL2 {t q u} {
+	global dataTm
+	global datavolt
+	global skippedsmp
+	global par_sskip
 
 # display data
 	set dataTm $t
-	set datavolt "$ul"
-	show_dset $quvette
+	set datavolt "$u"
 
-	if {$quvette == 0} { return }
+	if {$q == 0} {return [list]}
 
 # data stablilizer
-	if { [incr skippedsmp] < $par_sskip } { return }
+	if { [incr skippedsmp] < $par_sskip } {return [list]}
 
-# convert to Intensity%
-	set ul [expr $ul*100.0]
+	return [list $t [q2name $q] [expr $u*100.0]]
+}
 
-	data_process $t $quvette $ul
+proc data_dispatcher {self} {
+	if {[set l1data [data_processL1 $self]] == {}} {return}
+	if {[set l2data [data_processL2 {*}$l1data]] == {}} {return}
+	if {[set l3data [data_processL3 {*}$l2data]] == {}} {return}
+	if {[set l4data [data_processL4 {*}$l3data]] == {}} {return}
+	data_out {*}$l4data
 }
 

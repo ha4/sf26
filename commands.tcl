@@ -61,18 +61,6 @@ proc cmd_open {} {
 	setbutton "Stop Rec"
 }
 
-proc cmd_clr {} {
-	global  n
-	set n 0
-
-	::AutoPlotM::clear .c
-	animate
-}
-
-proc cmd_cell {} {
-	 unset -nocomplain fil1
-}
-
 proc cmd_conn {} {
 	global config_port
 

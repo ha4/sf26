@@ -127,24 +127,27 @@ set sysbg [.toolbarl.port cget -bg]
 
 toplevel .toolbar2 -bd 2 -relief flat
 
-entry  .toolbar2.vDin  -text 0     -relief sunken -textvariable dataDi -width 6
-entry  .toolbar2.vDout -text 0     -relief sunken -textvariable dataDo -width 6
-entry  .toolbar2.vTm   -text 0     -relief sunken -textvariable dataTm -width 6
+entry  .toolbar2.vDin  -relief sunken -textvariable dataDi -width 8
+entry  .toolbar2.vDout -relief sunken -textvariable dataDo -width 8
+entry  .toolbar2.vTm   -relief sunken -textvariable dataTm -width 8
 
-entry  .toolbar2.vTd   -text 0     -relief sunken -textvariable dataTd -width 6
-entry  .toolbar2.vTin  -text 0     -relief sunken -textvariable dataTi -width 6
-entry  .toolbar2.vTout -text 0     -relief sunken -textvariable dataTo -width 6
-entry  .toolbar2.vTc   -text 0     -relief sunken -textvariable dataTc -width 6
-entry  .toolbar2.vCk   -text 0     -relief sunken -textvariable dataTk -width 6
+entry  .toolbar2.vTd   -relief sunken -textvariable dataTd -width 8
+entry  .toolbar2.vTin  -relief sunken -textvariable dataTi -width 8
+entry  .toolbar2.vTout -relief sunken -textvariable dataTo -width 8
+entry  .toolbar2.vTc   -relief sunken -textvariable dataTc -width 8
+entry  .toolbar2.vCz   -relief sunken -textvariable dataTz -width 8
+entry  .toolbar2.vCk   -relief sunken -textvariable dataTk -width 8
+checkbutton .toolbar2.vCOR -variable dataCORR
+checkbutton .toolbar2.vCAL -variable dataCAL
 
 entry  .toolbar2.nSk      -relief sunken -textvariable par_sskip -width 3
 entry  .toolbar2.nSd      -relief sunken -textvariable par_srcd -width 3
 entry  .toolbar2.nSin     -relief sunken -textvariable par_srcin -width 3
 entry  .toolbar2.nSout    -relief sunken -textvariable par_srcout -width 3
 entry  .toolbar2.nSc      -relief sunken -textvariable par_srccal -width 3
-entry  .toolbar2.vC       -relief sunken -textvariable par_setcal -width 6
-entry  .toolbar2.vTinmax  -relief sunken -textvariable par_ticorr -width 6
-entry  .toolbar2.vToutmax -relief sunken -textvariable par_tocorr -width 6
+entry  .toolbar2.vC       -relief sunken -textvariable par_setcal -width 8
+entry  .toolbar2.vTinmax  -relief sunken -textvariable par_ticorr -width 8
+entry  .toolbar2.vToutmax -relief sunken -textvariable par_tocorr -width 8
 entry  .toolbar2.vAlpha   -relief sunken -textvariable par_alpha -width 5
 
 # The toolbar is packed to the root window. It is horizontally stretched.
@@ -158,7 +161,10 @@ grid   [label .toolbar2.lTd -an e -text "T% dark"] .toolbar2.vTd  -sticky ew -pa
 grid   [label .toolbar2.lTi -an e -text "Tin%"]     .toolbar2.vTin -sticky ew -padx 4
 grid   [label .toolbar2.lTo -an e -text "Tout%"]     .toolbar2.vTout -sticky ew -padx 4
 grid   [label .toolbar2.lTc -an e -text "T% corr"] .toolbar2.vTc  -sticky ew -padx 4
-grid   [label .toolbar2.lTcc -an e -text "T%koeff"] .toolbar2.vCk -sticky ew -padx 4
+grid   [label .toolbar2.lTcz -an e -text "T% zero"] .toolbar2.vCz -sticky ew -padx 4
+grid   [label .toolbar2.lTcc -an e -text "T% scale"] .toolbar2.vCk -sticky ew -padx 4
+grid   [label .toolbar2.ldco -an e -text "auto correction"] .toolbar2.vCOR -sticky w -padx 4
+grid   [label .toolbar2.ldca -an e -text "quvette calibr."] .toolbar2.vCAL -sticky w -padx 4
 grid   [hr .toolbar2.hr2]  - -sticky ew -padx 4 -pady 5
 grid   [label .toolbar2.lp3 -an center -text "Setup parameters"] - -sticky w -padx 4
 grid   [label .toolbar2.lsk -an e -text "Skip samples"] .toolbar2.nSk -sticky ew -padx 4

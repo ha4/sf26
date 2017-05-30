@@ -16,12 +16,13 @@ set par_alpha   0.18
 set par_optoeps 112
 set par_optolen 5.2
 set par_gasflow 60
+set par_integrate 0
 set config_tplot   "t"
 
 set config_file ".sf26.conf"
 set config_vars {config_port config_logfile config_tplot par_sskip par_srcd \
  par_srcin par_srcout par_srccal par_setcal par_ticorr par_tocorr par_alpha \
- par_optoeps par_optolen par_gasflow}
+ par_optoeps par_optolen par_gasflow par_integrate}
 
 # -- DATASET variables
 set datavolt 0

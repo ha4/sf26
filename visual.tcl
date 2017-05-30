@@ -34,7 +34,7 @@ menu .mbar.dat -tearoff 0
 .mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable config_tplot -command { cmd_clear }
 
 .mbar.dat add command -label "Connect" -command { cmd_conn }
-.mbar.dat add command -label "Integration.." -command { cmd_intp }
+.mbar.dat add command -label "Integration.." -command { cmd_intg }
 .mbar.dat add checkbutton -label "Quvette corrections" -onvalue 1 -offvalue 0 -variable dataCAL
 .mbar.dat add checkbutton -label "Scale corrections" -onvalue 1 -offvalue 0 -variable dataCORR
 

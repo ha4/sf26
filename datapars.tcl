@@ -58,6 +58,10 @@ proc data_out {t in out} {
 
 proc integrate {s t v} {
 	global intg
+	global par_gasflow
+	global par_optolen
+	global par_optoeps
+
 
 	if ([info exist intg($s,t)]) {
 		set i [expr $intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0]
@@ -123,25 +127,25 @@ proc data_processL3 {t s i} {
 	global dataTd
 	global dataTc
 	global dataTk
+	global dataTz
 
 	inputdata $s
-	if {$s == "srcd"} {set dataTd [smooth_a $i $par_alpha fil0]}
-	if {$dataCORR} {set $i [expr $i-$dataTd]}
+	if {$s == "srcd"} {
+		set dataTd [smooth_a $i $par_alpha fil0]
+		if {$dataCORR} {set dataTz $dataTd}
+	}
+	set $i [expr $i-$dataTz]
 
         if {$s == "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
-		set dataTk [expr $dataTc/$par_setcal]
+		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
+		if {$dataCORR} {set dataTk [expr $dataTc/$par_setcal]}
 	}
-
-	if {$dataCAL && $s == "srccal"} {
-		set par_setcal [smooth_a $dataTc $par_alpha fil1]
-	} else {
-		if {$dataCORR} {set $i [expr $i * $dataTk]}
-	}
+	set $i [expr $i * $dataTk]
 
 	if {$config_tplot == "t"} {$chart $t $i "set$s"}
 
-	switch $s srcin - srcout {return [list $t $s $i]} default {return [list]}
+	switch $s srcin - srcout {list $t $s $i} default {list}
 }
 
 

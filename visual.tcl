@@ -21,22 +21,25 @@ menu .mbar.dat -tearoff 0
 .mbar add command -label About -underline 0 -command { cmd_about }
 
 .mbar.fl add command -label "Save as.." -command { cmd_fsel config_logfile }
-.mbar.fl add command -label "Capture"   -command { cmd_open }
-.mbar.fl add command -label "Stop"      -command { cmd_close }
+.mbar.fl add command -label "Record"   -command { cmd_open }
+.mbar.fl add command -label "Stop Recording" -command { cmd_close }
+.mbar.fl add command -label "Replay File.." -command { cmd_fread }
 .mbar.fl add command -label "Console"   -command { cmd_cons }
 .mbar.fl add separator
 .mbar.fl add command -label Exit -command { cmd_exit }
 
 .mbar.plt add command -label "Clear" -command { cmd_clear }
+.mbar.plt add separator
 .mbar.plt add radiobutton -label "Plot Transition %" -value "t" -variable config_tplot    -command { cmd_clear }
 .mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable config_tplot -command { cmd_clear }
 
 .mbar.dat add command -label "Connect" -command { cmd_conn }
+.mbar.dat add command -label "Integration.." -command { cmd_intp }
 .mbar.dat add checkbutton -label "Quvette corrections" -onvalue 1 -offvalue 0 -variable dataCAL
 .mbar.dat add checkbutton -label "Scale corrections" -onvalue 1 -offvalue 0 -variable dataCORR
 
 frame .toolbar -bd 2 -relief flat
-canvas .c -relief groove -bg beige
+canvas .c -relief sunken -bg beige -borderwidth 1
 frame .toolbarl -bd 2 -relief flat
 
 
@@ -246,6 +249,6 @@ proc inputdata {s} {
 	global sysbg
 	if {$s=="srcin"}  { .toolbar2.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .toolbar2.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
 	if {$s=="srcout"} { .toolbar2.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .toolbar2.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
-	if {$s=="srccal"} { .toolbar2.vTc configure -bg IndianRed1} else { .toolbar2.vTc configure -bg $sysbg}
 	if {$s=="srcd"}   { .toolbar2.vTd configure -bg lightgray } else { .toolbar2.vTd configure -bg $sysbg}
+	if {$s=="srccal"} { .toolbar2.vTc configure -bg IndianRed1} else { .toolbar2.vTc configure -bg $sysbg}
 }

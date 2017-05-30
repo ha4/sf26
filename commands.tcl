@@ -82,3 +82,25 @@ proc cmd_fsel {fvar} {
 	if { $filename != "" } { set sf $filename }
 }
 
+proc cmd_fread {} {
+	set types {
+		{{Data Files}       {.sf.dat}     }
+		{{Text Files}       {.txt}        }
+		{{All Files}        *             }
+	}
+
+	set filename [tk_getOpenFile -filetypes $types \
+		-defaultextension {.sf.dat}]
+
+	if { $filename == "" } {return}
+
+	set fd [open $filename r]
+	fconfigure $fd -buffering line
+	# fileevent $fd readable [list getstrdata $chan]
+	while {-1 != [gets $fd a]} {
+		foreach {t in out} [split $a " "] {break}
+		data_out $t $in $out
+		update
+	}
+	close $fd
+}

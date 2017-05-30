@@ -104,3 +104,10 @@ proc cmd_fread {} {
 	}
 	close $fd
 }
+
+proc cmd_int {} {
+	global par_integrate
+	global par_optoeps
+	global par_optolen
+	global par_gasflow
+}

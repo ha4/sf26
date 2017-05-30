@@ -56,6 +56,27 @@ proc data_out {t in out} {
 	}
 }
 
+proc integrate {s t v} {
+	global intg
+
+	if ([info exist intg($s,t)]) {
+		set i [expr $intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0]
+	} else {
+		set i 0
+	}
+	set intg($s,s) $i
+	set intg($s,t) $t
+	set intg($s,v) $v
+	set intg($s,n) [expr $par_gasflow*$intg($s,s)/60.0/$par_optolen/$par_optoeps]
+}
+
+proc data_intg {t in out} {
+	global par_integrate
+
+	if {$in != "*"}  {integrate srcin  $t $in}
+	if {$out != "*"} {integrate srcout $t $out}
+}
+
 # time, source quvette, transition%
 proc data_processL4 {t src trans} {
 	global par_ticorr
@@ -206,5 +227,6 @@ proc data_dispatcher {self} {
 	if {[set l3data [data_processL3 {*}$l2data]] == {}} {return}
 	if {[set l4data [data_processL4 {*}$l3data]] == {}} {return}
 	data_out {*}$l4data
+	data_intg {*}$l4data
 }
 

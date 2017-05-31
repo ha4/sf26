@@ -100,6 +100,7 @@ proc cmd_fread {} {
 	while {-1 != [gets $fd a]} {
 		foreach {t in out} [split $a " "] {break}
 		data_out $t $in $out
+		data_intg $t $in $out
 		update
 	}
 	close $fd

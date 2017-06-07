@@ -272,3 +272,35 @@ proc flashscale {s} {
 		.toolbarl.d$s configure -bg $c
 	}
 }
+
+proc progress {v} {
+	global prog_perc
+
+	if {![winfo exists .progress] && $v ne ""} {
+		toplevel .progress
+		button .progress.stop -command {unset -nocomplain prog_perc} -text "Cancel" -width 8
+		canvas .progress.prog -width 200 -height 20 -bd 1 -relief sunken -highlightt 0
+		.progress.prog create rectangle 0 0 0 20 -tags bar -fill navy
+
+		grid .progress.prog -sticky ew -padx 10 -pady 10
+		grid .progress.stop -pady 10
+		wm title .progress "Reading..."
+		wm resizable .progress 0 0
+		wm protocol .progress WM_DELETE_WINDOW {unset -nocomplain prog_perc}
+		set prog_perc ""
+		focus .progress.stop
+	}
+
+	if {$v eq ""} {
+		catch {destroy .progress}
+		unset -nocomplain prog_perc
+		return 0
+	}
+
+	if {![info exists prog_perc]} {return 0}
+	if {$prog_perc eq $v} {return 1}
+	.progress.prog coords bar 0 0 [expr {int($v * 2)}] 20
+	set prog_perc $v
+	update
+	return 1
+}

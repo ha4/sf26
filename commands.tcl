@@ -83,6 +83,7 @@ proc cmd_fsel {fvar} {
 }
 
 proc cmd_fread {} {
+	global config_tplot
 	set types {
 		{{Data Files}       {.sf.dat}     }
 		{{Text Files}       {.txt}        }
@@ -94,16 +95,9 @@ proc cmd_fread {} {
 
 	if { $filename == "" } {return}
 
-	set fd [open $filename r]
-	fconfigure $fd -buffering line
-	# fileevent $fd readable [list getstrdata $chan]
-	while {-1 != [gets $fd a]} {
-		foreach {t in out} [split $a " "] {break}
-		data_out $t $in $out
-		data_intg $t $in $out
-		update
-	}
-	close $fd
+	set config_tplot d
+	cmd_clear
+	datafileread $filename indicator
 }
 
 proc cmd_int {} {

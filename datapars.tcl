@@ -240,3 +240,19 @@ proc data_dispatcher {self} {
 	data_intg {*}$l4data
 }
 
+proc datafileread {filename progress} {
+	if {[set m100 [file size $filename]] <= 0} return
+
+	set fd [open $filename r]
+	fconfigure $fd -buffering line
+	# fileevent $fd readable [list getstrdata $chan]
+	while {-1 != [gets $fd a]} {
+		set m [tell $fd]
+		foreach {t in out} [split $a " "] {break}
+		data_out $t $in $out
+		data_intg $t $in $out
+		if {[progress [expr {int($m*100.0/$m100)}]] != 1} break
+	}
+	close $fd
+	progress ""
+}

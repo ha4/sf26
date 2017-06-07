@@ -20,7 +20,7 @@ proc q2name {q} {
 # transition to optical density conversion
 proc t2d {t} {
 	if {$t > 0} {
-	  set d [expr 2.0-log10($t) ]
+	  set d [expr {2.0-log10($t)}]
 	  if {$d < 5.0} { return $d }
 	} 
 	return 5.0
@@ -64,14 +64,14 @@ proc integrate {s t v} {
 
 
 	if ([info exist intg($s,t)]) {
-		set i [expr $intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0]
+		set i [expr {$intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0}]
 	} else {
 		set i 0
 	}
 	set intg($s,s) $i
 	set intg($s,t) $t
 	set intg($s,v) $v
-	set intg($s,n) [expr $par_gasflow*$intg($s,s)/60.0/$par_optolen/$par_optoeps]
+	set intg($s,n) [expr {$par_gasflow*$intg($s,s)/60.0/$par_optolen/$par_optoeps}]
 }
 
 proc data_intg {t in out} {
@@ -96,14 +96,14 @@ proc data_processL4 {t src trans} {
 
 	if {$src == "srcin"} {
 		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
-		set dataTi [expr $trans*100.0/$par_ticorr]
+		set dataTi [expr {$trans*100.0/$par_ticorr}]
 		set dataDi [t2d $dataTi]
 		return [list $t $dataDi "*"]
 	}
 		
 	if {$src == "srcout"} {
 		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
-		set dataTo [expr $trans*100.0/$par_tocorr]
+		set dataTo [expr {$trans*100.0/$par_tocorr}]
 		set dataDo [t2d $dataTo]
 		return [list $t "*" $dataDo]
 	}
@@ -137,17 +137,17 @@ proc data_processL3 {t s i} {
 			flashscale z
 		}
 	}
-	set $i [expr $i-$dataTz]
+	set $i [expr {$i-$dataTz}]
 
         if {$s == "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
 		if {$dataCORR} {
-			set dataTk [expr $dataTc/$par_setcal]
+			set dataTk [expr {$dataTc/$par_setcal}]
 			flashscale s
 		}
 	}
-	set $i [expr $i * $dataTk]
+	set $i [expr {$i * $dataTk}]
 
 	if {$config_tplot == "t"} {$chart $t $i "set$s"}
 
@@ -182,7 +182,7 @@ proc data_processL1 {self} {
 	lowpass_avg_put $volt fil
 
 	if {![info exist StartT]} { set StartT $clk }
-	set t [expr $clk-$StartT]
+	set t [expr {$clk-$StartT}]
 	if {(![info exist Tprev]) || $Tprev == $t} {
 		set Tprev $t
 		set timch 0
@@ -228,7 +228,7 @@ proc data_processL2 {t q u} {
 # data stablilizer
 	if { [incr skippedsmp] < $par_sskip } {return [list]}
 
-	return [list $t [q2name $q] [expr $u*100.0]]
+	return [list $t [q2name $q] [expr {$u*100.0}]]
 }
 
 proc data_dispatcher {self} {

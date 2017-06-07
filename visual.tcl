@@ -49,13 +49,15 @@ frame .toolbarl -bd 2 -relief flat
 
 # An exit button with a text
 button .toolbarl.conn  -text "Connect" -borderwidth 1 -relief flat -overrelief raised -command {cmd_conn}
-entry  .toolbarl.port                -relief sunken                 -textvariable config_port -width 10
+entry  .toolbarl.port                -relief sunken                 -textvariable config_port -width 20
 
 label  .toolbarl.dset1  -relief flat -text "1" -state disabled
 label  .toolbarl.dset2  -relief flat -text "2" -state disabled
 label  .toolbarl.dset3  -relief flat -text "3" -state disabled
 label  .toolbarl.dset4  -relief flat -text "4" -state disabled
 entry  .toolbarl.dvolt  -relief sunken -textvariable datavolt -width 10
+label  .toolbarl.dz     -relief sunken -text " Z "
+label  .toolbarl.ds     -relief sunken -text " S "
 
 label  .toolbar.l1 -text "IN"
 entry  .toolbar.din   -relief sunken -textvariable dataDi -width 10
@@ -75,6 +77,8 @@ pack   .toolbarl.dset2  -side left
 pack   .toolbarl.dset3  -side left
 pack   .toolbarl.dset4  -side left
 pack   .toolbarl.dvolt  -side left
+pack   .toolbarl.dz  -side left -padx 4
+pack   .toolbarl.ds  -side left -padx 4
 
 pack    [label .toolbar.s1 -text {} -borderwidth 0 -width 2 -padx 0] -side left
 pack   .toolbar.l1  -side left
@@ -257,4 +261,14 @@ proc inputdata {s} {
 	if {$s=="srcout"} { .toolbar2.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .toolbar2.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
 	if {$s=="srcd"}   { .toolbar2.vTd configure -bg lightgray } else { .toolbar2.vTd configure -bg $sysbg}
 	if {$s=="srccal"} { .toolbar2.vTc configure -bg IndianRed1} else { .toolbar2.vTc configure -bg $sysbg}
+}
+
+proc flashscale {s} {
+	global sysbg
+	if {$s eq "s"} {set c "IndianRed1"} elseif {$s eq "z"} {set c "darkgray"} else return
+	if {[.toolbarl.d$s cget -bg] eq $c} {
+		.toolbarl.d$s configure -bg $sysbg
+	} else {
+		.toolbarl.d$s configure -bg $c
+	}
 }

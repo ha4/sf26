@@ -132,14 +132,20 @@ proc data_processL3 {t s i} {
 	inputdata $s
 	if {$s == "srcd"} {
 		set dataTd [smooth_a $i $par_alpha fil0]
-		if {$dataCORR} {set dataTz $dataTd}
+		if {$dataCORR} {
+			set dataTz $dataTd
+			flashscale z
+		}
 	}
 	set $i [expr $i-$dataTz]
 
         if {$s == "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
-		if {$dataCORR} {set dataTk [expr $dataTc/$par_setcal]}
+		if {$dataCORR} {
+			set dataTk [expr $dataTc/$par_setcal]
+			flashscale s
+		}
 	}
 	set $i [expr $i * $dataTk]
 

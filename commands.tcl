@@ -28,8 +28,12 @@ proc cmd_exit {} {
 
 proc cmd_clear {} {
 	global StartT
+	global intg
+
 	::AutoPlotM::clear .c
 	unset -nocomplain StartT
+	unset -nocomplain intg(srcin,t)
+	unset -nocomplain intg(srcout,t)
 }
 
 proc cmd_close {} {
@@ -100,9 +104,20 @@ proc cmd_fread {} {
 	datafileread $filename indicator
 }
 
-proc cmd_int {} {
+proc cmd_intg {} {
 	global par_integrate
 	global par_optoeps
 	global par_optolen
 	global par_gasflow
+
+	set par [list $par_integrate $par_optoeps $par_optolen $par_gasflow]
+	set names {
+		"Integration {1|0}"
+		{Extinction [1/M/cm]}
+		{Cell length [cm]}
+		{Gas flow [ml/min]}
+	}
+
+	set res [tk_inputer .intdia "Concentration/Integration" $names $par]
+	foreach {par_integrate par_optoeps par_optolen par_gasflow} $res break
 }

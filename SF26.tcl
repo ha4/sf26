@@ -18,6 +18,7 @@ source datapars.tcl
 source defaults.tcl
 catch {source $config_file}
 source configsave.tcl
+source tkinputer.tcl
 ::DAQU::channel chu data_dispatcher
 chu port $config_port
 

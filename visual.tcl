@@ -58,17 +58,7 @@ label  .toolbarl.dset4  -relief flat -text "4" -state disabled
 entry  .toolbarl.dvolt  -relief sunken -textvariable datavolt -width 10
 label  .toolbarl.dz     -relief sunken -text " Z "
 label  .toolbarl.ds     -relief sunken -text " S "
-
-label  .toolbar.l1 -text "IN"
-entry  .toolbar.din   -relief sunken -textvariable dataDi -width 10
-label  .toolbar.l2 -text "OUT"
-entry  .toolbar.dout  -relief sunken -textvariable dataDo -width 10
-
-button .toolbar.open  -text "Record" -width 8 -relief raised -overrelief raised -command {cmd_open}
-label  .toolbar.anim  -relief flat
-entry  .toolbar.file                -relief sunken                 -textvariable config_logfile -width 26
-button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
-checkbutton .toolbar.shex -text "Show Data" -relief flat -variable vShowEx -command {showex $vShowEx}
+entry  .toolbarl.dc     -relief groove -textvariable dataConv -width 8 -state disabled
 
 pack   .toolbarl.conn  -side left
 pack   .toolbarl.port  -side left
@@ -79,6 +69,22 @@ pack   .toolbarl.dset4  -side left
 pack   .toolbarl.dvolt  -side left
 pack   .toolbarl.dz  -side left -padx 4
 pack   .toolbarl.ds  -side left -padx 4
+pack   .toolbarl.dc  -side left
+
+
+
+label  .toolbar.l1 -text "IN"
+entry  .toolbar.din   -relief sunken -textvariable dataDi -width 10
+label  .toolbar.l2 -text "OUT"
+entry  .toolbar.dout  -relief sunken -textvariable dataDo -width 10
+
+button .toolbar.open  -text "Record" -width 8 -relief raised -overrelief raised -command {cmd_open}
+label  .toolbar.anim  -relief flat
+entry  .toolbar.file                -relief sunken                 -textvariable config_logfile -width 26
+button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
+label  .toolbar.l3 -text {Ozone [mmol]}
+entry  .toolbar.ozon                -relief sunken                 -textvariable intg(delta) -width 10
+checkbutton .toolbar.shex -text "Show Data" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack    [label .toolbar.s1 -text {} -borderwidth 0 -width 2 -padx 0] -side left
 pack   .toolbar.l1  -side left
@@ -91,12 +97,14 @@ pack   .toolbar.open  -side left -ipadx 10 -padx 4 -anchor center
 pack   .toolbar.anim  -side left
 pack   .toolbar.file  -side left
 pack   .toolbar.fsel  -side left
+pack    [label .toolbar.s4 -text {} -borderwidth 0 -width 2 -padx 0] -side left
+pack   .toolbar.l3  -side left
+pack   .toolbar.ozon  -side left
 pack   .toolbar.shex  -side right
 
 # pack   .toolbar.exitButton -side left -padx 2 -pady 2
 # pack   .toolbar.clrButton  -side left -padx 2 -pady 2
 # pack   .toolbar.consButton -side left -padx 2 -pady 2
-
 
 pack .toolbar -fill x -expand false
 pack .c -side top -fill both -expand true
@@ -129,63 +137,78 @@ setanimate .toolbar.anim {gray12 gray50 gray75 gray50} 1
 set sysbg [.toolbarl.port cget -bg]
 
 
-toplevel .toolbar2 -bd 2 -relief flat
+toplevel .ex -bd 2 -relief flat
+labelframe .ex.cv -bd 2 -relief groove -text {Current values}
+labelframe .ex.cp -bd 2 -relief groove -text {Current parameters}
+labelframe .ex.sp -bd 2 -relief groove -text {Setup parameters}
+labelframe .ex.in -bd 2 -relief groove -text {Integration}
 
-entry  .toolbar2.vDin  -relief sunken -textvariable dataDi -width 8
-entry  .toolbar2.vDout -relief sunken -textvariable dataDo -width 8
-entry  .toolbar2.vTm   -relief sunken -textvariable dataTm -width 8
+entry  .ex.cv.vTm   -relief sunken -textvariable dataTm -width 8
+entry  .ex.cv.vDin  -relief sunken -textvariable dataDi -width 8
+entry  .ex.cv.vDout -relief sunken -textvariable dataDo -width 8
+grid   [label .ex.cv.l1 -an e -text "time"] .ex.cv.vTm   -sticky ew -padx 4
+grid   [label .ex.cv.l2 -an e -text "Din"]  .ex.cv.vDin  -sticky ew -padx 4
+grid   [label .ex.cv.l3 -an e -text "Dout"] .ex.cv.vDout -sticky ew -padx 4
+grid columnconfigure    .ex.cv 1 -weight 1
 
-entry  .toolbar2.vTd   -relief sunken -textvariable dataTd -width 8
-entry  .toolbar2.vTin  -relief sunken -textvariable dataTi -width 8
-entry  .toolbar2.vTout -relief sunken -textvariable dataTo -width 8
-entry  .toolbar2.vTc   -relief sunken -textvariable dataTc -width 8
-entry  .toolbar2.vCz   -relief sunken -textvariable dataTz -width 8
-entry  .toolbar2.vCk   -relief sunken -textvariable dataTk -width 8
-checkbutton .toolbar2.vCOR -variable dataCORR
-checkbutton .toolbar2.vCAL -variable dataCAL
+entry  .ex.cp.vTd   -relief sunken -textvariable dataTd -width 8
+entry  .ex.cp.vTin  -relief sunken -textvariable dataTi -width 8
+entry  .ex.cp.vTout -relief sunken -textvariable dataTo -width 8
+entry  .ex.cp.vTc   -relief sunken -textvariable dataTc -width 8
+entry  .ex.cp.vCz   -relief sunken -textvariable dataTz -width 8
+entry  .ex.cp.vCk   -relief sunken -textvariable dataTk -width 8
+entry  .ex.cp.con -relief sunken -textvariable dataConv -width 8
+checkbutton .ex.cp.vCOR -variable dataCORR
+checkbutton .ex.cp.vCAL -variable dataCAL
+grid   [label .ex.cp.l1 -an e -text "T% dark"]  .ex.cp.vTd   -sticky ew -padx 4
+grid   [label .ex.cp.l2 -an e -text "T% in"]    .ex.cp.vTin  -sticky ew -padx 4
+grid   [label .ex.cp.l3 -an e -text "T% out"]   .ex.cp.vTout -sticky ew -padx 4
+grid   [label .ex.cp.l4 -an e -text "T% corr"]  .ex.cp.vTc   -sticky ew -padx 4
+grid   [label .ex.cp.l5 -an e -text "T% zero"]  .ex.cp.vCz   -sticky ew -padx 4
+grid   [label .ex.cp.l6 -an e -text "T% scale"] .ex.cp.vCk   -sticky ew -padx 4
+grid   [label .ex.cp.l7 -an e -text "convergence"] .ex.cp.con -sticky ew -padx 4
+grid   [label .ex.cp.l8 -an e -text "correction"] .ex.cp.vCOR -sticky w -padx 4
+grid   [label .ex.cp.l9 -an e -text "calibrate"]  .ex.cp.vCAL -sticky w -padx 4
+grid columnconfigure    .ex.cp 1 -weight 1
 
-entry  .toolbar2.nSk      -relief sunken -textvariable par_sskip -width 3
-entry  .toolbar2.nSd      -relief sunken -textvariable par_srcd -width 3
-entry  .toolbar2.nSin     -relief sunken -textvariable par_srcin -width 3
-entry  .toolbar2.nSout    -relief sunken -textvariable par_srcout -width 3
-entry  .toolbar2.nSc      -relief sunken -textvariable par_srccal -width 3
-entry  .toolbar2.vC       -relief sunken -textvariable par_setcal -width 8
-entry  .toolbar2.vTinmax  -relief sunken -textvariable par_ticorr -width 8
-entry  .toolbar2.vToutmax -relief sunken -textvariable par_tocorr -width 8
-entry  .toolbar2.vAlpha   -relief sunken -textvariable par_alpha -width 5
+entry  .ex.sp.nSk      -relief sunken -textvariable par_sskip -width 3
+entry  .ex.sp.nSd      -relief sunken -textvariable par_srcd -width 3
+entry  .ex.sp.nSin     -relief sunken -textvariable par_srcin -width 3
+entry  .ex.sp.nSout    -relief sunken -textvariable par_srcout -width 3
+entry  .ex.sp.nSc      -relief sunken -textvariable par_srccal -width 3
+entry  .ex.sp.vC       -relief sunken -textvariable par_setcal -width 8
+entry  .ex.sp.vTinmax  -relief sunken -textvariable par_ticorr -width 8
+entry  .ex.sp.vToutmax -relief sunken -textvariable par_tocorr -width 8
+entry  .ex.sp.vAlph    -relief sunken -textvariable par_alpha -width 5
+grid   [label .ex.sp.l1 -an e -text "Skip samples"] .ex.sp.nSk -sticky ew -padx 4
+grid   [label .ex.sp.l2 -an e -text "Dark src"] .ex.sp.nSd     -sticky ew -padx 4
+grid   [label .ex.sp.l3 -an e -text "IN src"]   .ex.sp.nSin    -sticky ew -padx 4
+grid   [label .ex.sp.l4 -an e -text "OUT src"]  .ex.sp.nSout   -sticky ew -padx 4
+grid   [label .ex.sp.l5 -an e -text "Corr src"] .ex.sp.nSc     -sticky ew -padx 4
+grid   [label .ex.sp.l6 -an e -text "Corr T%"]  .ex.sp.vC      -sticky ew -padx 4
+grid   [label .ex.sp.l7 -an e -text "TinCorr"]  .ex.sp.vTinmax -sticky ew -padx 4
+grid   [label .ex.sp.l8 -an e -text "ToutCorr"] .ex.sp.vToutmax -sticky ew -padx 4
+grid   [label .ex.sp.l9 -an e -text "Smooth"]   .ex.sp.vAlph   -sticky ew -padx 4
+grid columnconfigure    .ex.sp 1 -weight 1
 
-# The toolbar is packed to the root window. It is horizontally stretched.
-grid   [label .toolbar2.lp1 -an center -text "Current values"] - -sticky w -padx 4
-grid   [label .toolbar2.lTm -an e -text "time"] .toolbar2.vTm -sticky ew -padx 4
-grid   [label .toolbar2.lDi -an e -text "Din"] .toolbar2.vDin -sticky ew -padx 4
-grid   [label .toolbar2.lDo -an e -text "Dout"] .toolbar2.vDout -sticky ew -padx 4
-grid   [hr .toolbar2.hr1] - -sticky ew -padx 4 -pady 5
-grid   [label .toolbar2.lp2 -an center -text "Current parameters"] - -sticky w -padx 4
-grid   [label .toolbar2.lTd -an e -text "T% dark"] .toolbar2.vTd  -sticky ew -padx 4
-grid   [label .toolbar2.lTi -an e -text "Tin%"]     .toolbar2.vTin -sticky ew -padx 4
-grid   [label .toolbar2.lTo -an e -text "Tout%"]     .toolbar2.vTout -sticky ew -padx 4
-grid   [label .toolbar2.lTc -an e -text "T% corr"] .toolbar2.vTc  -sticky ew -padx 4
-grid   [label .toolbar2.lTcz -an e -text "T% zero"] .toolbar2.vCz -sticky ew -padx 4
-grid   [label .toolbar2.lTcc -an e -text "T% scale"] .toolbar2.vCk -sticky ew -padx 4
-grid   [label .toolbar2.ldco -an e -text "auto correction"] .toolbar2.vCOR -sticky w -padx 4
-grid   [label .toolbar2.ldca -an e -text "quvette calibr."] .toolbar2.vCAL -sticky w -padx 4
-grid   [hr .toolbar2.hr2]  - -sticky ew -padx 4 -pady 5
-grid   [label .toolbar2.lp3 -an center -text "Setup parameters"] - -sticky w -padx 4
-grid   [label .toolbar2.lsk -an e -text "Skip samples"] .toolbar2.nSk -sticky ew -padx 4
-grid   [label .toolbar2.lSd -an e -text "Dark src"] .toolbar2.nSd  -sticky ew -padx 4
-grid   [label .toolbar2.lSi -an e -text "IN src"]  .toolbar2.nSin  -sticky ew -padx 4
-grid   [label .toolbar2.lSo -an e -text "OUT src"]  .toolbar2.nSout -sticky ew -padx 4
-grid   [label .toolbar2.lSc -an e -text "Corr src"] .toolbar2.nSc  -sticky ew -padx 4
-grid   [label .toolbar2.lCv -an e -text "Corr T%"]  .toolbar2.vC  -sticky ew -padx 4
-grid   [label .toolbar2.lCti -an e -text "TinCorr"]  .toolbar2.vTinmax -sticky ew -padx 4
-grid   [label .toolbar2.lCto -an e -text "ToutCorr"]  .toolbar2.vToutmax -sticky ew -padx 4
-grid   [label .toolbar2.lAlph -an e -text "SmoothAlpha"]  .toolbar2.vAlpha -sticky ew -padx 4
+checkbutton .ex.in.en -variable par_integrate
+entry  .ex.in.ia   -relief sunken -textvariable intg(srcin,s) -width 8
+entry  .ex.in.in   -relief sunken -textvariable intg(srcin,n) -width 8
+entry  .ex.in.oa   -relief sunken -textvariable intg(srcout,s) -width 8
+entry  .ex.in.on   -relief sunken -textvariable intg(srcout,n) -width 8
+entry  .ex.in.oz   -relief sunken -textvariable intg(delta) -width 8
+grid   [label .ex.in.l1 -an e -text Enable]   .ex.in.en -sticky w  -padx 4
+grid   [label .ex.in.l2 -an e -text input]    .ex.in.ia -sticky ew -padx 4
+grid   [label .ex.in.l3 -an e -text {[mmol]}] .ex.in.in -sticky ew -padx 4
+grid   [label .ex.in.l4 -an e -text output]   .ex.in.oa -sticky ew -padx 4
+grid   [label .ex.in.l5 -an e -text {[mmol]}] .ex.in.on -sticky ew -padx 4
+grid   [label .ex.in.l6 -an e -text Delta]    .ex.in.oz -sticky ew -padx 4
+grid columnconfigure    .ex.in 1 -weight 1
 
-#grid columnconfigure    .toolbar2 0 -weight 1
-grid columnconfigure    .toolbar2 1 -weight 1
-
-# pack .toolbar2 -side top -fill y
-
+grid .ex.cv .ex.in -sticky news -padx 5 -pady 5
+grid .ex.cp .ex.sp -sticky news -padx 5 -pady 5
+grid columnconfigure .ex all -weight 1
+grid rowconfigure    .ex all -weight 1
 }
 
 # --------------------
@@ -231,13 +254,13 @@ proc showex {showit} {
 	global vShowEx
 
 	if { $showit } {
-	   wm manage .toolbar2
-	   wm protocol .toolbar2 WM_DELETE_WINDOW { showex 0 }
-	   wm attributes .toolbar2 -topmost 1
-	   wm title .toolbar2 "Extended data"
+	   wm manage .ex
+	   wm protocol .ex WM_DELETE_WINDOW { showex 0 }
+	   wm attributes .ex -topmost 1
+	   wm title .ex "Extended data"
 	   set vShowEx 1
 	} else {
-	   wm forget .toolbar2
+	   wm forget .ex
 	   set vShowEx 0
 	}
 }
@@ -257,10 +280,10 @@ proc setbutton {s} {
 
 proc inputdata {s} {
 	global sysbg
-	if {$s=="srcin"}  { .toolbar2.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .toolbar2.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
-	if {$s=="srcout"} { .toolbar2.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .toolbar2.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
-	if {$s=="srcd"}   { .toolbar2.vTd configure -bg lightgray } else { .toolbar2.vTd configure -bg $sysbg}
-	if {$s=="srccal"} { .toolbar2.vTc configure -bg IndianRed1} else { .toolbar2.vTc configure -bg $sysbg}
+	if {$s=="srcin"}  { .ex.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .ex.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
+	if {$s=="srcout"} { .ex.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .ex.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
+	if {$s=="srcd"}   { .ex.vTd configure -bg lightgray } else { .ex.vTd configure -bg $sysbg}
+	if {$s=="srccal"} { .ex.vTc configure -bg IndianRed1} else { .ex.vTc configure -bg $sysbg}
 }
 
 proc flashscale {s} {

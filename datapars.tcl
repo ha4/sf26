@@ -58,12 +58,13 @@ proc data_out {t in out} {
 
 proc integrate {s t v} {
 	global intg
+	global par_integrate
 	global par_gasflow
 	global par_optolen
 	global par_optoeps
 
-
-	if ([info exist intg($s,t)]) {
+	if {!$par_integrate} return
+	if [info exist intg($s,t)] {
 		set i [expr {$intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0}]
 	} else {
 		set i 0
@@ -72,6 +73,9 @@ proc integrate {s t v} {
 	set intg($s,t) $t
 	set intg($s,v) $v
 	set intg($s,n) [expr {$par_gasflow*$intg($s,s)/60.0/$par_optolen/$par_optoeps}]
+	if {![string is double -strict $intg(srcin,n)]} {set intg(srcin,n) 0}
+	if {![string is double -strict $intg(srcout,n)]} {set intg(srcout,n) 0}
+	set intg(delta) [expr {$intg(srcin,n) -  $intg(srcout,n)}]
 }
 
 proc data_intg {t in out} {
@@ -128,10 +132,12 @@ proc data_processL3 {t s i} {
 	global dataTc
 	global dataTk
 	global dataTz
+	global dataConv
 
 	inputdata $s
 	if {$s == "srcd"} {
 		set dataTd [smooth_a $i $par_alpha fil0]
+		set dataConv [expr {$i - $dataTd}]
 		if {$dataCORR} {
 			set dataTz $dataTd
 			flashscale z
@@ -141,6 +147,7 @@ proc data_processL3 {t s i} {
 
         if {$s == "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
+		set dataConv [expr {$i - $dataTc}]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
 		if {$dataCORR} {
 			set dataTk [expr {$dataTc/$par_setcal}]

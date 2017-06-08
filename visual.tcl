@@ -24,6 +24,7 @@ menu .mbar.dat -tearoff 0
 .mbar.fl add command -label "Record"   -command { cmd_open }
 .mbar.fl add command -label "Stop Recording" -command { cmd_close }
 .mbar.fl add command -label "Replay File.." -command { cmd_fread }
+.mbar.fl add command -label "Layer 2 File.." -command { cmd_f2read }
 .mbar.fl add command -label "Console"   -command { cmd_cons }
 .mbar.fl add separator
 .mbar.fl add command -label Exit -command { cmd_exit }
@@ -280,10 +281,10 @@ proc setbutton {s} {
 
 proc inputdata {s} {
 	global sysbg
-	if {$s=="srcin"}  { .ex.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .ex.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
-	if {$s=="srcout"} { .ex.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .ex.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
-	if {$s=="srcd"}   { .ex.vTd configure -bg lightgray } else { .ex.vTd configure -bg $sysbg}
-	if {$s=="srccal"} { .ex.vTc configure -bg IndianRed1} else { .ex.vTc configure -bg $sysbg}
+	if {$s=="srcin"}  { .ex.cp.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .ex.cp.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
+	if {$s=="srcout"} { .ex.cp.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .ex.cp.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
+	if {$s=="srcd"}   { .ex.cp.vTd configure -bg lightgray } else { .ex.cp.vTd configure -bg $sysbg}
+	if {$s=="srccal"} { .ex.cp.vTc configure -bg IndianRed1} else { .ex.cp.vTc configure -bg $sysbg}
 }
 
 proc flashscale {s} {

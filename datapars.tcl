@@ -247,7 +247,22 @@ proc data_dispatcher {self} {
 	data_intg {*}$l4data
 }
 
-proc datafileread {filename progress} {
+proc l4data {a} {
+	foreach {t in out} [split $a " "] {break}
+	data_out $t $in $out
+	data_intg $t $in $out
+}
+
+proc l2data {a} {
+	foreach {t q v p} [split $a " "] {break}
+	if {[set l2data [data_processL2 $t $q $v]] == {}} {return}
+	if {[set l3data [data_processL3 {*}$l2data]] == {}} {return}
+	if {[set l4data [data_processL4 {*}$l3data]] == {}} {return}
+	data_out {*}$l4data
+	data_intg {*}$l4data
+}
+
+proc datafileread {filename lineproc pindicator} {
 	if {[set m100 [file size $filename]] <= 0} return
 
 	set fd [open $filename r]
@@ -255,11 +270,9 @@ proc datafileread {filename progress} {
 	# fileevent $fd readable [list getstrdata $chan]
 	while {-1 != [gets $fd a]} {
 		set m [tell $fd]
-		foreach {t in out} [split $a " "] {break}
-		data_out $t $in $out
-		data_intg $t $in $out
-		if {[progress [expr {int($m*100.0/$m100)}]] != 1} break
+		$lineproc $a
+		if {[$pindicator [expr {int($m*100.0/$m100)}]] != 1} break
 	}
 	close $fd
-	progress ""
+	$pindicator ""
 }

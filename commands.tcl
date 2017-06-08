@@ -101,7 +101,24 @@ proc cmd_fread {} {
 
 	set config_tplot d
 	cmd_clear
-	datafileread $filename indicator
+	datafileread $filename l4data progress
+}
+
+proc cmd_f2read {} {
+	global config_tplot
+	set types {
+		{{Data Files}       {.dat}   }
+		{{All Files}        *        }
+	}
+
+	set filename [tk_getOpenFile -filetypes $types \
+		-defaultextension {.dat}]
+
+	if { $filename == "" } {return}
+
+	set config_tplot t
+	cmd_clear
+	datafileread $filename l2data progress
 }
 
 proc cmd_intg {} {

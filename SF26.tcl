@@ -7,8 +7,8 @@ exec wish "$0" "$@"
 # http://www.icanprogram.com/09tk/main.html
 # http://wiki.tcl.tk/969
 
-set sf26cc_version "3.1"
-set sf26cc_date "20170524"
+set sf26cc_version "3.2"
+set sf26cc_date "20170608"
 source daqu.tcl
 source lowpass.tcl
 source autoplotm.tcl

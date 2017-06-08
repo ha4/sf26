@@ -29,11 +29,13 @@ proc cmd_exit {} {
 proc cmd_clear {} {
 	global StartT
 	global intg
+	global kmarks
 
 	::AutoPlotM::clear .c
 	unset -nocomplain StartT
 	unset -nocomplain intg(srcin,t)
 	unset -nocomplain intg(srcout,t)
+	showmk [set kmarks 1]
 }
 
 proc cmd_close {} {
@@ -137,4 +139,12 @@ proc cmd_intg {} {
 
 	set res [tk_inputer .intdia "Concentration/Integration" $names $par]
 	foreach {par_integrate par_optoeps par_optolen par_gasflow} $res break
+}
+
+proc cmd_mark {} {
+	global kmarks
+	global kmarkdo
+	if {![info exists kmarks]} {set kmarks 1}
+	set kmarkdo $kmarks
+	showmk [incr kmarks]
 }

@@ -25,6 +25,7 @@ chu port $config_port
 # --- Widgets SETUP
 frames
 showex $vShowEx
+cmd_clear
 
 raise .
 catch {console hide}

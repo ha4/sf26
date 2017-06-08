@@ -35,7 +35,9 @@ menu .mbar.dat -tearoff 0
 .mbar.plt add radiobutton -label "Plot Optical Density" -value "d" -variable config_tplot -command { cmd_clear }
 
 .mbar.dat add command -label "Connect" -command { cmd_conn }
+.mbar.dat add command -label "Mark" -command { cmd_mark }
 .mbar.dat add command -label "Integration.." -command { cmd_intg }
+.mbar.dat add command -label "Extended data.." -command {showex 1}
 .mbar.dat add checkbutton -label "Quvette corrections" -onvalue 1 -offvalue 0 -variable dataCAL
 .mbar.dat add checkbutton -label "Scale corrections" -onvalue 1 -offvalue 0 -variable dataCORR
 
@@ -85,6 +87,7 @@ entry  .toolbar.file                -relief sunken                 -textvariable
 button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel config_logfile}
 label  .toolbar.l3 -text {Ozone [mmol]}
 entry  .toolbar.ozon                -relief sunken                 -textvariable intg(delta) -width 10
+button .toolbar.mark  -text "Mark"  -relief raised -width 6        -command {cmd_mark}
 checkbutton .toolbar.shex -text "Show Data" -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack    [label .toolbar.s1 -text {} -borderwidth 0 -width 2 -padx 0] -side left
@@ -100,8 +103,9 @@ pack   .toolbar.file  -side left
 pack   .toolbar.fsel  -side left
 pack    [label .toolbar.s4 -text {} -borderwidth 0 -width 2 -padx 0] -side left
 pack   .toolbar.l3  -side left
-pack   .toolbar.ozon  -side left
-pack   .toolbar.shex  -side right
+pack   .toolbar.ozon -side left
+pack   .toolbar.mark -side left -padx 3
+pack   .toolbar.shex -side right
 
 # pack   .toolbar.exitButton -side left -padx 2 -pady 2
 # pack   .toolbar.clrButton  -side left -padx 2 -pady 2
@@ -328,3 +332,5 @@ proc progress {v} {
 	update
 	return 1
 }
+
+proc showmk {n} {.toolbar.mark configure -text "Mark $n"}

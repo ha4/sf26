@@ -45,13 +45,21 @@ proc data_out {t in out} {
 	global config_tplot
 	global chart
 	global dumpfl
+	global kmarkdo
 
-	if {$config_tplot == "d" && $in != "*"}  {$chart $t $in  "setsrcin"}
-	if {$config_tplot == "d" && $out != "*"} {$chart $t $out "setsrcout"}
+	if {$config_tplot == "d"} {
+		if {$in != "*"}  {$chart $t $in  "setsrcin"}
+		if {$out != "*"} {$chart $t $out "setsrcout"}
+	}
 
 # store to file
         if {[info exist dumpfl]} {
-		puts $dumpfl "$t $in $out" 
+		set s "$t $in $out"
+		if {[info exists kmarkdo]} {
+			append s " $kmarkdo"
+			unset kmarkdo
+		}
+		puts $dumpfl $s
   	 	animate
 	}
 }

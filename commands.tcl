@@ -5,8 +5,9 @@ proc cmd_about {} {
 	global sf26cc_version
 	global sf26cc_date
 
-	tk_messageBox -message "SF-26 Data Acustion System\nver $sf26cc_version\
- at $sf26cc_date" -type ok -title "SF-26"
+	tk_messageBox -message "[mc "SF-26 Data Acustion System"]\n\
+[mc "ver."] $sf26cc_version\
+[mc "date"] $sf26cc_date" -type ok -title "SF-26"
 }
 
 proc cmd_cons {} {
@@ -16,8 +17,8 @@ proc cmd_cons {} {
 proc cmd_exit {} {
 	global config_file config_vars
 
-	set retc [tk_messageBox -message "Really exit?" \
-		-type yesno -icon warning -title "SF-26 Exit"]
+	set retc [tk_messageBox -message [mc "Really exit?"] \
+		-type yesno -icon warning -title [mc "SF-26 Exit"]]
 
 	if {$retc == yes} {
 		config_save $config_file $config_vars
@@ -45,7 +46,7 @@ proc cmd_close {} {
 	unset dumpfl
 	close $m
 
-	setbutton "Record"
+	setbutton [mc "Record"]
 }
 
 proc cmd_open {} {
@@ -58,13 +59,13 @@ proc cmd_open {} {
 	}
 
 	if {[file exist $config_logfile]} {
-		set retc [tk_messageBox -message "File EXIST.\n Overwrite??" \
-			-type yesno -icon warning -title "Data File Overwrite"]
+		set retc [tk_messageBox -message [mc "File EXIST.\n Overwrite??"] \
+			-type yesno -icon warning -title [mc "Data File Overwrite"]]
 	if { $retc != "yes" } { return }
 	}
 
 	set dumpfl [open $config_logfile w+]
-	setbutton "Stop Rec"
+	setbutton [mc "Stop Rec"]
 }
 
 proc cmd_conn {} {
@@ -130,14 +131,14 @@ proc cmd_intg {} {
 	global par_gasflow
 
 	set par [list $par_integrate $par_optoeps $par_optolen $par_gasflow]
-	set names {
-		"Integration {1|0}"
-		{Extinction [1/M/cm]}
-		{Cell length [cm]}
-		{Gas flow [ml/min]}
-	}
+	set names [list \
+		[mc {Integration {1|0}}]\
+		[mc {Extinction [1/M/cm]}]\
+		[mc {Cell length [cm]}]\
+		[mc {Gas flow [ml/min]}]\
+	]
 
-	set res [tk_inputer .intdia "Concentration/Integration" $names $par]
+	set res [tk_inputer .intdia [mc "Concentration/Integration"] $names $par]
 	foreach {par_integrate par_optoeps par_optolen par_gasflow} $res break
 }
 

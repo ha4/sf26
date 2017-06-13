@@ -10,19 +10,20 @@ package require msgcat
 namespace import msgcat::mc
 set sf26cc_version "3.3"
 set sf26cc_date "20170612"
-source daqu.tcl
-source lowpass.tcl
-source autoplotm.tcl
-source visual.tcl
-source commands.tcl
-source datapars.tcl
-source defaults.tcl
+set sf26dir [file dirname [info script]]
+source $sf26dir/daqu.tcl
+source $sf26dir/lowpass.tcl
+source $sf26dir/autoplotm.tcl
+source $sf26dir/visual.tcl
+source $sf26dir/commands.tcl
+source $sf26dir/datapars.tcl
+source $sf26dir/defaults.tcl
 catch {source $config_file}
-source configsave.tcl
-source tkinputer.tcl
+source $sf26dir/configsave.tcl
+source $sf26dir/tkinputer.tcl
 
 ::msgcat::mclocale ru
-::msgcat::mcload "."
+::msgcat::mcload $sf26dir
 
 ::DAQU::channel chu data_dispatcher
 chu port $config_port

@@ -1,5 +1,5 @@
 proc config_save {filename varlist} {
-  set f [open $filename w+]
+  if [catch {set f [open $filename [if [file exists $filename] {set _ r+} else {set _ w+}]]}] {return}
   foreach v $varlist {
     global $v
     set w [set $v]

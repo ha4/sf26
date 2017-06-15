@@ -127,7 +127,7 @@ proc ::AutoPlotM::replot { wnd {atg "all"} } {
   if {[info exist scale($atg,vmin)]==0 ||
       [info exist scale($atg,vmax)]==0 } { return }
 
-  foreach {p q r} [masaxis $scale($atg,vmin) $scale($atg,vmax)] {break}
+  foreach {p q r} [masaxis $scale($atg,vmin) $scale($atg,vmax)] break
   set scale($atg,amin)  $p
   set scale($atg,amax)  $q
   set scale($atg,astep) $r
@@ -136,6 +136,7 @@ proc ::AutoPlotM::replot { wnd {atg "all"} } {
   set wwidth  [winfo width $wnd]
 
   set typ  [getset $atg]
+puts "getset: $typ"
   set slst [lrange $typ 1 end]
   set typ  [lindex $typ 0]
   if {$typ == ""} { return }
@@ -225,9 +226,9 @@ proc ::AutoPlotM::plotXYline {wnd x y dtg} {
   variable lastpt
 
   if {![info exists lastpt($dtg)]} return
-  set xn x; if {[info exist dset($dtg,xaxis)]} {set xn $dset($dtg,xaxis)}
-  set yn y; if {[info exist dset($dtg,yaxis)]} {set yn $dset($dtg,yaxis)}
-  if {![info exist scale($xn,ab)] || ![info exist scale($yn,ab)]} { return }
+  set xn $dset($dtg,xaxis)
+  set yn $dset($dtg,yaxis)
+  if {![info exist scale($xn,ab)] || ![info exist scale($yn,ab)]} return
   set xsc $scale($xn,ab)
   set ysc $scale($yn,ab)
 
@@ -246,15 +247,15 @@ proc ::AutoPlotM::plotXYdot {wnd x y dtg} {
   variable dset
   variable scale
 
-  set cfil black
-  set xn x; if {[info exist dset($dtg,xaxis)]} {set xn $dset($dtg,xaxis)}
-  set yn y; if {[info exist dset($dtg,yaxis)]} {set yn $dset($dtg,yaxis)}
+  set xn $dset($dtg,xaxis)
+  set yn $dset($dtg,yaxis)
+  if {![info exist scale($xn,ab)] || ![info exist scale($yn,ab)]} return
   set xsc $scale($xn,ab)
   set ysc $scale($yn,ab)
 
   set px [toPixel $xsc $x]
   set py [toPixel $ysc $y]
-  if {[info exists dset($dtg,color)]} {set cfil $dset($dtg,color)}
+  if {[info exists dset($dtg,color)]} {set cfil $dset($dtg,color)} else {set cfil black}
 
   set pym [expr $py-1]
   set pyp [expr $py+1]
@@ -283,18 +284,16 @@ proc ::AutoPlotM::PlotData {wnd xcoord ycoord {dstg set1} {typ line}} {
   variable scale
   variable lastpt
 
-  set xname x
-  set yname y
-  if {[info exist dset($dstg,xaxis)]} {set xname $dset($dstg,xaxis)}
-  if {[info exist dset($dstg,yaxis)]} {set yname $dset($dstg,yaxis)}
+  if {[info exist dset($dstg,xaxis)]} {set xn $dset($dstg,xaxis)} else {set dset($dstg,xaxis) [set xn x]}
+  if {[info exist dset($dstg,yaxis)]} {set yn $dset($dstg,yaxis)} else {set dset($dstg,yaxis) [set yn y]}
 
 # is any changes in data range? is scale factor changed?
-  minmax $xcoord scale($xname,vmin) scale($xname,vmax)
-  if [minmax $xcoord scale($xname,amin) scale($xname,amax)] {replot $wnd $xname}
+  minmax $xcoord scale($xn,vmin) scale($xn,vmax)
+  if [minmax $xcoord scale($xn,amin) scale($xn,amax)] {replot $wnd $xn}
 
-  minmax $ycoord scale($yname,vmin) scale($yname,vmax)
-  if [minmax $ycoord scale($yname,amin) scale($yname,amax)] {replot $wnd $yname}
+  minmax $ycoord scale($yn,vmin) scale($yn,vmax)
+  if [minmax $ycoord scale($yn,amin) scale($yn,amax)] {replot $wnd $yn}
 
   plotXY$typ $wnd $xcoord $ycoord $dstg
-  set lastpt($dtg) [list $xcoord $ycoord]
+  set lastpt($dstg) [list $xcoord $ycoord]
 }

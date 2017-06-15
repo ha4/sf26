@@ -256,16 +256,19 @@ proc data_dispatcher {self} {
 }
 
 proc l4data {a} {
-	foreach {t in out} [split $a " "] {break}
-	data_out $t $in $out
-	data_intg $t $in $out
+	set d [split $a " "]
+	if {[llength $d] != 3} return
+	data_out {*}$d
+	data_intg {*}$d
 }
 
 proc l2data {a} {
-	foreach {t q v p} [split $a " "] {break}
-	if {[set l2data [data_processL2 $t $q $v]] == {}} {return}
-	if {[set l3data [data_processL3 {*}$l2data]] == {}} {return}
-	if {[set l4data [data_processL4 {*}$l3data]] == {}} {return}
+	set d [split $a " "]
+        if {[llength $d] != 4} return
+	foreach {t q v p} break
+	if {[set l2data [data_processL2 $t $q $v]] == {}} return
+	if {[set l3data [data_processL3 {*}$l2data]] == {}} return
+	if {[set l4data [data_processL4 {*}$l3data]] == {}} return
 	data_out {*}$l4data
 	data_intg {*}$l4data
 }

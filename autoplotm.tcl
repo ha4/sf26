@@ -7,11 +7,11 @@ namespace eval ::AutoPlotM {
 # scale param(name, fmt offset anchor color gcolor)
 # dset    : mix axis and data (dset, xaxis yaxis color)
 # pixel=ab[1]*value+ab[0]
+# functions create, clear, createaxis, PlotData
   variable scale
   variable pscale
   variable dset
   variable lastpt
-  variable wbg
 }
 
 proc ::AutoPlotM::masaxis {dmin dmax} {
@@ -20,7 +20,7 @@ proc ::AutoPlotM::masaxis {dmin dmax} {
 
 # min degree of range
   if {$dmax > $dmin} {
-	set ords [expr floor(log10($dmax-$dmin))]
+	set ords [expr {floor(log10($dmax-$dmin))}]
   } elseif {$dmax == $dmin} {
 	set ords -1
   } else { return [list] }
@@ -29,18 +29,18 @@ proc ::AutoPlotM::masaxis {dmin dmax} {
   set ddd [expr pow(10,$ords-1)]
 
 # calculate max num of entries
-  set ordax [expr ceil(($dmax-$dmin)/$ddd)]
+  set ordax [expr {ceil(($dmax-$dmin)/$ddd)}]
 
-  set astp [expr $ddd*(($ordax<10)?1:(($ordax<20)?2:(($ordax<50)?5:10)))]
-  set amin [expr $astp * floor($dmin / $astp)]
-  set amax [expr $astp *  ceil($dmax / $astp)]
+  set astp [expr {$ddd*(($ordax<10)?1:(($ordax<20)?2:(($ordax<50)?5:10)))}]
+  set amin [expr {$astp * floor($dmin / $astp)}]
+  set amax [expr {$astp *  ceil($dmax / $astp)}]
 
   return [list $amin $amax $astp]
 }                                                                               
 
 proc ::AutoPlotM::scaler {dmin dmax pixels} {
-  set a [expr ($dmin==$dmax)?$pixels:($pixels/($dmax-$dmin))]
-  set b [expr -$dmin*$a - (($pixels<0)?$pixels:0)]
+  set a [expr {($dmin==$dmax)?$pixels:($pixels/($dmax-$dmin))}]
+  set b [expr {-$dmin*$a - (($pixels<0)?$pixels:0)}]
   return [list $b $a]
 }                                                                               
 
@@ -48,22 +48,22 @@ proc ::AutoPlotM::rescaler {name new} {
   variable scale
 
   foreach {nb na} $new break
-  set rc [list]
-  if {[info exist scale($name,ab)]} {
-	foreach {lb la} $scale($name,ab) break
+  set rc {0 1}
+  if [info exist scale($name,ab)] {
+	foreach {b a} $scale($name,ab) break
 
-	set sc [expr $na/$la]
-	set offs [if {$sc==1} {expr {$lb-$nb}} else {expr {($lb*$sc-$nb)/($sc-1.0)}}]
+	set s [expr {$na/$a}]
+	set o [if {$s==1} {expr {$b-$nb}} else {expr {($b*$s-$nb)/($s-1.0)}}]
 
-	set rc [list $offs $sc]
+	set rc [list $o $s]
   }
   set scale($name,ab) [list $nb $na]
   return $rc
 }
 
 proc ::AutoPlotM::toPixel {ab coord} {
-  foreach {b a} $ab {break}
-  return [expr int($a * $coord + $b)]
+  foreach {b a} $ab break
+  expr int($a * $coord + $b)
 }
 
 # draw axis/grid, size:in pixels,
@@ -73,42 +73,44 @@ proc ::AutoPlotM::DrawAxis {wnd sel size fixed atg} {
   variable pscale
 
   set v  $scale($atg,amin)
-  set out [expr $scale($atg,amax)+0.5*$scale($atg,astep)]
+  set out [expr {$scale($atg,amax)+0.5*$scale($atg,astep)}]
   set ta [list -tag $atg]
   set ga [list -dash {2 2} -tag $atg]
   set ad 0
-  if {[info exist scale($atg,ab)] == 0} { return }
-  if {[info exist pscale($atg,gcolor)]} {lappend ga -fill $pscale($atg,gcolor)}
-  if {[info exist pscale($atg,tcolor)]} {lappend ta -fill $pscale($atg,tcolor)}
-  if {[info exist pscale($atg,anchor)]} {lappend ta -anchor $pscale($atg,anchor)}
-  if {[info exist pscale($atg,offset)]} {set fixed [expr $fixed+$pscale($atg,offset)]}
-  if {[info exist pscale($atg,fmt)]} {set fmt $pscale($atg,fmt)}
+  if [info exist pscale($atg,gcolor)] {lappend ga -fill $pscale($atg,gcolor)}
+  if [info exist pscale($atg,tcolor)] {lappend ta -fill $pscale($atg,tcolor)}
+  if [info exist pscale($atg,anchor)] {lappend ta -anchor $pscale($atg,anchor)}
+  if [info exist pscale($atg,offset)] {
+   set fixed [expr {$fixed+$pscale($atg,offset)}]}
+  if [info exist pscale($atg,fmt)] {set fmt $pscale($atg,fmt)}
 
   while { $v < $out } {
 	set vpix [toPixel $scale($atg,ab) $v]
-	foreach {x y} [lrange [list $vpix $fixed $vpix] {*}$sel] {break}
-	if {[info exist fmt]} {set atxt [format $fmt $v]} else {set atxt $v}
-	set v [expr $v+$scale($atg,astep)]
+	foreach {x y} [lrange [list $vpix $fixed $vpix] {*}$sel] break
+	set atxt [if [info exist fmt] {format $fmt $v} else {set v}]
+	set v [expr {$v+$scale($atg,astep)}]
 
 	$wnd create line {*}[lrange [list $x 0 $y] {*}$sel] \
 		{*}[lrange [list $x $size $y] {*}$sel] {*}$ga
-	$wnd create text [expr $x + 3] [expr $y - 6] -text $atxt {*}$ta
+	$wnd create text [expr {$x+3}] [expr {$y-3}] -text $atxt {*}$ta
   }
 }
+
+proc ::AutoPlotM::nfirst {i} {lindex [split $i ,] 0}
 
 # return list of data sets for axis
 proc ::AutoPlotM::getset {axis} {
   variable dset
 
-  if {$axis == "all"} {return [list all]}
-  set l [list {0 1}]
+  if {$axis eq "all"} {return [list all]}
+  set l {{0 1}}
   foreach v [array names dset *,xaxis] {
-	if {$dset($v)==$axis} { lappend l [lindex [split $v ,] 0] }
+	if {$dset($v) eq $axis} {lappend l [nfirst $v]}
   }
   if {[llength $l] > 1} { return $l }
-  set l [list {1 2}]
+  set l {{1 2}}
   foreach v [array names dset *,yaxis] {
-	if {$dset($v)==$axis} { lappend l [lindex [split $v ,] 0] }
+	if {$dset($v) eq $axis} {lappend l [nfirst $v]}
   }
   if {[llength $l] > 1} { return $l }
   return [list]
@@ -119,59 +121,48 @@ proc ::AutoPlotM::replot { wnd {atg "all"} } {
   variable scale
 
 # total rescale
-  if {$atg == "all"} {
-    foreach v [array names scale *,ab] { replot $wnd [lindex [split $v ,] 0] }
+  if {$atg eq "all"} {
+    foreach v [array names scale *,ab] {replot $wnd [nfirst $v]}
     return
   }
 
-  if {[info exist scale($atg,vmin)]==0 ||
-      [info exist scale($atg,vmax)]==0 } { return }
+  if {![info exist scale($atg,vmin)] ||
+      ![info exist scale($atg,vmax)] } return
 
   foreach {p q r} [masaxis $scale($atg,vmin) $scale($atg,vmax)] break
-  set scale($atg,amin)  $p
-  set scale($atg,amax)  $q
-  set scale($atg,astep) $r
+  array set scale [list $atg,amin $p $atg,amax $q $atg,astep $r]
 
   set wheight [winfo height $wnd]
   set wwidth  [winfo width $wnd]
 
   set typ  [getset $atg]
-puts "getset: $typ"
+  if {[llength $typ] == 0} return
   set slst [lrange $typ 1 end]
   set typ  [lindex $typ 0]
-  if {$typ == ""} { return }
 
   $wnd delete $atg
-  if {[info exist scale($atg,amin)] == 0} { return }
+  if {![info exist scale($atg,amin)]} return
 
-  foreach pix [lrange [list $wwidth [expr -$wheight] 0] {*}$typ] {break}
+  set pix [if [lindex $typ 0] {expr {-$wheight}} else {set wwidth}]
   set tmp [scaler $scale($atg,amin) $scale($atg,amax) $pix]
-  set tmp [rescaler $atg $tmp]
 
-  if {[llength $tmp] == 2} {
-	foreach {mov sc} $tmp {break}
-	foreach tg $slst {
-		$wnd scale $tg {*}[lrange [list $mov 0 $mov] {*}$typ] \
-		{*}[lrange [list $sc 1 $sc] {*}$typ]
-	}
+  foreach {mov sc} [rescaler $atg $tmp] break
+  foreach tg $slst {
+	$wnd scale $tg {*}[lrange [list $mov 0 $mov] {*}$typ] \
+	{*}[lrange [list $sc 1 $sc] {*}$typ]
   }
 
-  if {[info exists scale($atg,ab)]} {
-	if {[lindex $typ 0] == 0} {set p [list $wheight  $wheight]}
-	if {[lindex $typ 0] == 1} {set p [list $wwidth   0]}
-	DrawAxis $wnd $typ {*}$p $atg
-  }
+  set p [if [lindex $typ 0] {list $wwidth 0} else {list $wheight $wheight}]
+  DrawAxis $wnd $typ {*}$p $atg
   $wnd lower $atg
 }
 
 
 proc ::AutoPlotM::clear { wnd } {
   variable scale
-  variable wbg
   variable lastpt
 
   $wnd delete all
-  $wnd configure -background $wbg
 
   unset -nocomplain lastpt
   unset -nocomplain scale
@@ -184,11 +175,9 @@ proc ::AutoPlotM::createaxis {xy {dstg set1} {fmt %g} {anchor w} } {
   variable pscale
   variable dset
 
-  switch [string range $xy 0 0] {
-	"x" {set aname xaxis}
-	"y" {set aname yaxis}
-	default return }
-  set dset($dstg,$aname) $xy
+  switch [string range $xy 0 0] {"x" {set a xaxis} "y" {set a yaxis} \
+     default return}
+  set dset($dstg,$a) $xy
   set pscale($xy,fmt) $fmt
   set pscale($xy,anchor) $anchor
   set pscale($xy,tcolor) black
@@ -198,16 +187,13 @@ proc ::AutoPlotM::createaxis {xy {dstg set1} {fmt %g} {anchor w} } {
 proc ::AutoPlotM::create {wnd} {
   variable scale
   variable dset
-  variable wbg
 
   set newplot "automchart_$wnd"
   interp alias {} $newplot {} ::AutoPlotM::PlotData $wnd
 
-  set wbg    white
   clear $wnd
-  createaxis x
+  createaxis x set1 %g s 
   createaxis y
-  set dset(set1,color) black
 
   return $newplot
 }
@@ -215,27 +201,18 @@ proc ::AutoPlotM::create {wnd} {
 proc ::AutoPlotM::DoResize {wnd} {
   global redo
 
-  if {[info exists redo]} {after cancel $redo}
-  set redo [after 50 [list ::AutoPlotM::replot $wnd]]
+  if [info exists redo($wnd)] {after cancel $redo($wnd)}
+  set redo($wnd) [after 50 [list ::AutoPlotM::replot $wnd]]
 }
 
 # Draw the line piece
-proc ::AutoPlotM::plotXYline {wnd x y dtg} {
-  variable dset
-  variable scale
+proc ::AutoPlotM::plotXYline {wnd x y dtg cfil xsc ysc} {
   variable lastpt
 
   if {![info exists lastpt($dtg)]} return
-  set xn $dset($dtg,xaxis)
-  set yn $dset($dtg,yaxis)
-  if {![info exist scale($xn,ab)] || ![info exist scale($yn,ab)]} return
-  set xsc $scale($xn,ab)
-  set ysc $scale($yn,ab)
 
   set px [toPixel $xsc $x]
   set py [toPixel $ysc $y]
-  set cfil black
-  if {[info exists dset($dtg,color)]} {set cfil $dset($dtg,color)}
 
   set pxp [toPixel $xsc [lindex $lastpt($dtg) 0]]
   set pyp [toPixel $ysc [lindex $lastpt($dtg) 1]]
@@ -243,19 +220,9 @@ proc ::AutoPlotM::plotXYline {wnd x y dtg} {
 }
 
 # Draw the cross point
-proc ::AutoPlotM::plotXYdot {wnd x y dtg} {
-  variable dset
-  variable scale
-
-  set xn $dset($dtg,xaxis)
-  set yn $dset($dtg,yaxis)
-  if {![info exist scale($xn,ab)] || ![info exist scale($yn,ab)]} return
-  set xsc $scale($xn,ab)
-  set ysc $scale($yn,ab)
-
+proc ::AutoPlotM::plotXYdot {wnd x y dtg cfil xsc ysc} {
   set px [toPixel $xsc $x]
   set py [toPixel $ysc $y]
-  if {[info exists dset($dtg,color)]} {set cfil $dset($dtg,color)} else {set cfil black}
 
   set pym [expr $py-1]
   set pyp [expr $py+1]
@@ -278,14 +245,17 @@ proc ::AutoPlotM::minmax {v vmin vmax} {
   return false
 }
 
+proc ::AutoPlotM::qset {vn vv} {
+  upvar $vn v; if [info exist v] {set v} else {set v $vv}}
+ 
 # PlotData -- real data insert/draw
 proc ::AutoPlotM::PlotData {wnd xcoord ycoord {dstg set1} {typ line}} {
   variable dset
   variable scale
   variable lastpt
 
-  if {[info exist dset($dstg,xaxis)]} {set xn $dset($dstg,xaxis)} else {set dset($dstg,xaxis) [set xn x]}
-  if {[info exist dset($dstg,yaxis)]} {set yn $dset($dstg,yaxis)} else {set dset($dstg,yaxis) [set yn y]}
+  set xn [qset dset($dstg,xaxis) x]
+  set yn [qset dset($dstg,yaxis) y]
 
 # is any changes in data range? is scale factor changed?
   minmax $xcoord scale($xn,vmin) scale($xn,vmax)
@@ -294,6 +264,10 @@ proc ::AutoPlotM::PlotData {wnd xcoord ycoord {dstg set1} {typ line}} {
   minmax $ycoord scale($yn,vmin) scale($yn,vmax)
   if [minmax $ycoord scale($yn,amin) scale($yn,amax)] {replot $wnd $yn}
 
-  plotXY$typ $wnd $xcoord $ycoord $dstg
+  set c [qset dset($dstg,color) black]
+
+  if {[info exist scale($xn,ab)] && [info exist scale($yn,ab)]} {
+    plotXY$typ $wnd $xcoord $ycoord $dstg $c $scale($xn,ab) $scale($yn,ab)
+  }
   set lastpt($dstg) [list $xcoord $ycoord]
 }

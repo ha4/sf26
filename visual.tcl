@@ -41,8 +41,9 @@ menu .mbar.dat -tearoff 0
 .mbar.dat add checkbutton -label [mc "Cuvette calibration"] -onvalue 1 -offvalue 0 -variable dataCAL
 .mbar.dat add checkbutton -label [mc "Scale corrections"] -onvalue 1 -offvalue 0 -variable dataCORR
 
+# .c is beige ivory {floral white} seashell black
 frame .toolbar -bd 2 -relief flat
-canvas .c -relief sunken -bg beige -borderwidth 1
+canvas .c -relief sunken -bg ivory -borderwidth 1
 frame .toolbarl -bd 2 -relief flat
 
 

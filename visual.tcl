@@ -132,11 +132,11 @@ pack .toolbarl -fill x -expand false
 
 
 set chart [::AutoPlotM::create .c]
-set ::AutoPlotM::plotcols(setnone)  black
-set ::AutoPlotM::plotcols(setsrcin)  darkblue
-set ::AutoPlotM::plotcols(setsrccal)  darkred
-set ::AutoPlotM::plotcols(setsrcout)  darkgreen
-set ::AutoPlotM::plotcols(setsrcd)  darkgrey
+set ::AutoPlotM::dset(setnone,color)  black
+set ::AutoPlotM::dset(setsrcin,color)  darkblue
+set ::AutoPlotM::dset(setsrccal,color)  darkred
+set ::AutoPlotM::dset(setsrcout,color)  darkgreen
+set ::AutoPlotM::dset(setsrcd,color)  darkgrey
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50} 1
 set sysbg [.toolbarl.port cget -bg]

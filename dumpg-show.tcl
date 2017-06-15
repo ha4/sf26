@@ -90,12 +90,12 @@ proc getdata {clk ach volt bits} {
 
 }
 
-set ::AutoPlotM::plotcols(set0)  green
-set ::AutoPlotM::plotcols(set1)  darkblue
-set ::AutoPlotM::plotcols(set2)  red
-set ::AutoPlotM::plotcols(set3)  black
-set ::AutoPlotM::plotcols(set4)  grey
-set ::AutoPlotM::plotcols(set5)  pink
+set ::AutoPlotM::dset(set0,color)  green
+set ::AutoPlotM::dset(set1,color)  darkblue
+set ::AutoPlotM::dset(set2,color)  red
+set ::AutoPlotM::dset(set3,color)  black
+set ::AutoPlotM::dset(set4,color)  grey
+set ::AutoPlotM::dset(set5,color)  pink
 
 proc getstrdata {chan} {
  if {-1 != [gets $chan a]} {

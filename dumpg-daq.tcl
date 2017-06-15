@@ -145,9 +145,9 @@ proc setanimate {w icons} {
     $w configure -bitmap [lindex $AnimateImg($w,icons) 0]
 }
 
-set ::AutoPlotM::plotcols(set1)  green
-set ::AutoPlotM::plotcols(set2)  darkblue
-set ::AutoPlotM::plotcols(set3)  pink
+set ::AutoPlotM::dset(set1,color)  green
+set ::AutoPlotM::dset(set2,color)  darkblue
+set ::AutoPlotM::dset(set3,color)  pink
 
 setanimate .toolbar.anim {gray12 gray50 gray75 gray50}
 

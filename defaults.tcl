@@ -17,12 +17,14 @@ set par_optoeps 112
 set par_optolen 5.2
 set par_gasflow 60
 set par_integrate 0
+set par_tk 1.0
+set par_tz 0.0
 set config_tplot   "t"
 
 set config_file ".sf26.conf"
 set config_vars {config_port config_logfile config_tplot par_sskip par_srcd \
  par_srcin par_srcout par_srccal par_setcal par_ticorr par_tocorr par_alpha \
- par_optoeps par_optolen par_gasflow par_integrate}
+ par_optoeps par_optolen par_gasflow par_integrate par_tk par_tz}
 
 # -- DATASET variables
 set datavolt 0
@@ -32,9 +34,6 @@ set dataTm 0
 set dataTd 0
 set dataTi 0
 set dataTo 0
-set dataTc $par_setcal
-set dataTk 1.0
-set dataTz 0.0
 # quvette correction
 set dataCAL 0
 # span/zero auto correction

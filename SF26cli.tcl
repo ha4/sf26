@@ -19,14 +19,14 @@ set par_alpha   0.18
 set par_optoeps 112
 set par_optolen 5.2
 set par_gasflow 60
+set par_tk 1.0
+set par_tz 0.0
 # auto cuvette calibration
 set dataCAL 0
 # span/zero auto correction
 set dataCORR 1
 
 set dataTc $par_setcal
-set dataTk 1.0
-set dataTz 0.0
 
 
 # alpha - smooth, 1st order low-pass
@@ -87,7 +87,7 @@ while {} {
 	set bits [expr 0x$pinb]
 	set cuvette [switch $bits 7 {expr 1}  11 {expr 2}  13 {expr 3} 14 {expr 4} default {expr 0}]
 	# average filter
-	if {![info exists fil(n)]} {set fil(n) 1; set fil(sum) $volt} else {incr fil(n); set fil(sum) [expr {$fil(sum)+$volt}]}
+	set fil(sum) [if [info exists fil(n)] {expr {$fil(sum)+$volt}} else {expr {$volt}}]; incr fil(n)
 	set t [expr {$clk-$StartT}]
 	if {$Qprev != $cuvette } {
 		set Qprev $cuvette
@@ -110,18 +110,18 @@ while {} {
 	if {$cuvette == $par_srcd} {
 		set dataTd [smooth_a $trans $par_alpha fil0]
 		set dataConv [expr {$trans - $dataTd}]
-		if {$dataCORR} {set dataTz $dataTd}
+		if {$dataCORR} {set par_tz $dataTd}
 		puts "shadowSignal $trans convergence:$dataConv"
 	}
-	set $trans [expr {$trans-$dataTz}]
+	set $trans [expr {$trans-$par_tz}]
         if {$cuvette == $par_srccal} {
 		set dataTc [smooth_a $trans $par_alpha filk]
 		set dataConv [expr {$trans - $dataTc}]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
-		if {$dataCORR} {set dataTk [expr {$dataTc/$par_setcal}]}
+		if {$dataCORR} {set par_tk [expr {$dataTc/$par_setcal}]}
 		puts "referenceSignal $trans convergence:$dataConv"
 	}
-	set $trans [expr {$trans * $dataTk}]
+	set $trans [expr {$trans * $par_tk}]
 	# final processing/integration
 	if {$cuvette == $par_srcin} {
 		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}

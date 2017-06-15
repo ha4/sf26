@@ -160,8 +160,8 @@ entry  .ex.cp.vTd   -relief sunken -textvariable dataTd -width 8
 entry  .ex.cp.vTin  -relief sunken -textvariable dataTi -width 8
 entry  .ex.cp.vTout -relief sunken -textvariable dataTo -width 8
 entry  .ex.cp.vTc   -relief sunken -textvariable dataTc -width 8
-entry  .ex.cp.vCz   -relief sunken -textvariable dataTz -width 8
-entry  .ex.cp.vCk   -relief sunken -textvariable dataTk -width 8
+entry  .ex.cp.vCz   -relief sunken -textvariable par_tz -width 8
+entry  .ex.cp.vCk   -relief sunken -textvariable par_tk -width 8
 entry  .ex.cp.con -relief sunken -textvariable dataConv -width 8
 checkbutton .ex.cp.vCOR -variable dataCORR
 checkbutton .ex.cp.vCAL -variable dataCAL

@@ -22,6 +22,8 @@ catch {source $config_file}
 source $sf26dir/configsave.tcl
 source $sf26dir/tkinputer.tcl
 
+set dataTc $par_setcal
+
 ::msgcat::mclocale ru
 ::msgcat::mcload $sf26dir
 

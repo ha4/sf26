@@ -138,8 +138,8 @@ proc data_processL3 {t s i} {
 
 	global dataTd
 	global dataTc
-	global dataTk
-	global dataTz
+	global par_tk
+	global par_tz
 	global dataConv
 
 	inputdata $s
@@ -147,22 +147,22 @@ proc data_processL3 {t s i} {
 		set dataTd [smooth_a $i $par_alpha fil0]
 		set dataConv [expr {$i - $dataTd}]
 		if {$dataCORR} {
-			set dataTz $dataTd
+			set par_tz $dataTd
 			flashscale z
 		}
 	}
-	set $i [expr {$i-$dataTz}]
+	set $i [expr {$i-$par_tz}]
 
         if {$s == "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
 		set dataConv [expr {$i - $dataTc}]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
 		if {$dataCORR} {
-			set dataTk [expr {$dataTc/$par_setcal}]
+			set par_tk [expr {$dataTc/$par_setcal}]
 			flashscale s
 		}
 	}
-	set $i [expr {$i * $dataTk}]
+	set $i [expr {$i * $par_tk}]
 
 	if {$config_tplot == "t"} {$chart $t $i "set$s"}
 

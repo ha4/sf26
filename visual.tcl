@@ -20,12 +20,11 @@ menu .mbar.dat -tearoff 0
 .mbar add cascade -menu .mbar.dat -label [mc Data] -underline 0
 .mbar add command -label [mc About] -underline 0 -command { cmd_about }
 
-.mbar.fl add command -label [mc "Save as.."] -command { cmd_fsel config_logfile }
-.mbar.fl add command -label [mc "Record"]   -command { cmd_open }
-.mbar.fl add command -label [mc "Stop Recording"] -command { cmd_close }
-.mbar.fl add command -label [mc "Replay File.."] -command { cmd_fread }
-.mbar.fl add command -label [mc "Layer 2 File.."] -command { cmd_f2read }
-.mbar.fl add command -label [mc "Console"]   -command { cmd_cons }
+foreach {n c} [list [mc "Save as.."] {cmd_fsel config_logfile} [mc "Record"] {cmd_open} \
+[mc "Stop Recording"] {cmd_close}  [mc "Replay File.."] {cmd_fread} \
+[mc "Layer 2 File.."] {cmd_f2read} [mc "Console"] {cmd_cons}] {
+  .mbar.fl add command -label $n -command $c
+}
 .mbar.fl add separator
 .mbar.fl add command -label [mc Exit] -command { cmd_exit }
 
@@ -37,7 +36,7 @@ menu .mbar.dat -tearoff 0
 .mbar.dat add command -label [mc "Connect"] -command { cmd_conn }
 .mbar.dat add command -label [mc "Mark"] -command { cmd_mark }
 .mbar.dat add command -label [mc "Integration.."] -command { cmd_intg }
-.mbar.dat add command -label [mc "Extended data.."] -command {showex 1}
+.mbar.dat add checkbutton -label [mc "Extended data.."] -onvalue 1 -offvalue 0 -variable vShowEx -command {showex $vShowEx}
 .mbar.dat add checkbutton -label [mc "Cuvette calibration"] -onvalue 1 -offvalue 0 -variable dataCAL
 .mbar.dat add checkbutton -label [mc "Scale corrections"] -onvalue 1 -offvalue 0 -variable dataCORR
 
@@ -54,11 +53,7 @@ frame .toolbarl -bd 2 -relief flat
 # An exit button with a text
 button .toolbarl.conn  -text [mc "Connect"] -borderwidth 1 -relief flat -overrelief raised -command {cmd_conn}
 entry  .toolbarl.port                -relief sunken                 -textvariable config_port -width 20
-
-label  .toolbarl.dset1  -relief flat -text "1" -state disabled
-label  .toolbarl.dset2  -relief flat -text "2" -state disabled
-label  .toolbarl.dset3  -relief flat -text "3" -state disabled
-label  .toolbarl.dset4  -relief flat -text "4" -state disabled
+foreach q {1 2 3 4} {label  .toolbarl.dset$q  -relief flat -text $q -state disabled}
 entry  .toolbarl.dvolt  -relief sunken -textvariable datavolt -width 10
 label  .toolbarl.dz     -relief sunken -text " Z "
 label  .toolbarl.ds     -relief sunken -text " S "
@@ -66,15 +61,10 @@ entry  .toolbarl.dc     -relief groove -textvariable dataConv -width 8 -state di
 
 pack   .toolbarl.conn  -side left
 pack   .toolbarl.port  -side left
-pack   .toolbarl.dset1  -side left
-pack   .toolbarl.dset2  -side left
-pack   .toolbarl.dset3  -side left
-pack   .toolbarl.dset4  -side left
-pack   .toolbarl.dvolt  -side left
+foreach q {set1 set2 set3 set4 volt} {pack .toolbarl.d$q  -side left}
 pack   .toolbarl.dz  -side left -padx 4
 pack   .toolbarl.ds  -side left -padx 4
 pack   .toolbarl.dc  -side left
-
 
 
 label  .toolbar.l1 -text [mc "IN"]
@@ -89,7 +79,6 @@ button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd
 label  .toolbar.l3 -text [mc {Ozone [mmol]}]
 entry  .toolbar.ozon                -relief sunken                 -textvariable intg(delta) -width 10
 button .toolbar.mark  -text [mc "Mark"]  -relief raised -width 6        -command {cmd_mark}
-checkbutton .toolbar.shex -text [mc "Show Data"] -relief flat -variable vShowEx -command {showex $vShowEx}
 
 pack    [label .toolbar.s1 -text {} -borderwidth 0 -width 2 -padx 0] -side left
 pack   .toolbar.l1  -side left
@@ -106,30 +95,10 @@ pack    [label .toolbar.s4 -text {} -borderwidth 0 -width 2 -padx 0] -side left
 pack   .toolbar.l3  -side left
 pack   .toolbar.ozon -side left
 pack   .toolbar.mark -side left -padx 3
-pack   .toolbar.shex -side right
-
-# pack   .toolbar.exitButton -side left -padx 2 -pady 2
-# pack   .toolbar.clrButton  -side left -padx 2 -pady 2
-# pack   .toolbar.consButton -side left -padx 2 -pady 2
 
 pack .toolbar -fill x -expand false
 pack .c -side top -fill both -expand true
 pack .toolbarl -fill x -expand false
-
-
-# -xscrollincrement 1
-#    -scrollregion {0 0 80000 0} 
-
-#    -xscrollcommand [list .t.xscroll set] \
-#    -yscrollcommand [list .t.yscroll set] \
-
-# scrollbar .t.xscroll -orient horizontal \
-#     -command [list .t.c xview]
-# scrollbar .t.yscroll -orient vertical \
-#    -command [list .t.c yview]
-#
-# grid .t.c       .t.yscroll -sticky news
-# grid .t.xscroll x          -sticky news
 
 
 set chart [::AutoPlotM::create .c]
@@ -144,26 +113,23 @@ set sysbg [.toolbarl.port cget -bg]
 
 
 toplevel .ex -bd 2 -relief flat
-labelframe .ex.cv -bd 2 -relief groove -text [mc "Current values"]
-labelframe .ex.cp -bd 2 -relief groove -text [mc "Current parameters"]
-labelframe .ex.sp -bd 2 -relief groove -text [mc "Setup parameters"]
-labelframe .ex.in -bd 2 -relief groove -text [mc "Integration"]
+set _ {-bd 2 -relief groove -text}
+labelframe .ex.cv {*}$_ [mc "Current values"]
+labelframe .ex.cp {*}$_ [mc "Current parameters"]
+labelframe .ex.sp {*}$_ [mc "Setup parameters"]
+labelframe .ex.in {*}$_ [mc "Integration"]
 
-entry  .ex.cv.vTm   -relief sunken -textvariable dataTm -width 8
-entry  .ex.cv.vDin  -relief sunken -textvariable dataDi -width 8
-entry  .ex.cv.vDout -relief sunken -textvariable dataDo -width 8
+set _ {-relief sunken -width 8 -textvariable}
+
+foreach {o v} {.ex.cv.vTm dataTm  .ex.cv.vDin dataDi  .ex.cv.vDout dataDo} {entry $o {*}$_ $v}
 grid   [label .ex.cv.l1 -an e -text [mc "time"]] .ex.cv.vTm   -sticky ew -padx 4
 grid   [label .ex.cv.l2 -an e -text [mc "Din"]]  .ex.cv.vDin  -sticky ew -padx 4
 grid   [label .ex.cv.l3 -an e -text [mc "Dout"]] .ex.cv.vDout -sticky ew -padx 4
 grid columnconfigure    .ex.cv 1 -weight 1
 
-entry  .ex.cp.vTd   -relief sunken -textvariable dataTd -width 8
-entry  .ex.cp.vTin  -relief sunken -textvariable dataTi -width 8
-entry  .ex.cp.vTout -relief sunken -textvariable dataTo -width 8
-entry  .ex.cp.vTc   -relief sunken -textvariable dataTc -width 8
-entry  .ex.cp.vCz   -relief sunken -textvariable par_tz -width 8
-entry  .ex.cp.vCk   -relief sunken -textvariable par_tk -width 8
-entry  .ex.cp.con -relief sunken -textvariable dataConv -width 8
+foreach {o v} {.ex.cp.vTd dataTd  .ex.cp.vTin dataTi  .ex.cp.vTout dataTo  \
+ .ex.cp.vTc dataTc  .ex.cp.vCz par_tz  .ex.cp.vCk par_tk  .ex.cp.con dataConv \
+} {entry $o {*}$_ $v}
 checkbutton .ex.cp.vCOR -variable dataCORR
 checkbutton .ex.cp.vCAL -variable dataCAL
 grid   [label .ex.cp.l1 -an e -text [mc "T% dark"]]  .ex.cp.vTd   -sticky ew -padx 4
@@ -177,15 +143,10 @@ grid   [label .ex.cp.l8 -an e -text [mc "correction"]] .ex.cp.vCOR -sticky w -pa
 grid   [label .ex.cp.l9 -an e -text [mc "calibrate"]]  .ex.cp.vCAL -sticky w -padx 4
 grid columnconfigure    .ex.cp 1 -weight 1
 
-entry  .ex.sp.nSk      -relief sunken -textvariable par_sskip -width 3
-entry  .ex.sp.nSd      -relief sunken -textvariable par_srcd -width 3
-entry  .ex.sp.nSin     -relief sunken -textvariable par_srcin -width 3
-entry  .ex.sp.nSout    -relief sunken -textvariable par_srcout -width 3
-entry  .ex.sp.nSc      -relief sunken -textvariable par_srccal -width 3
-entry  .ex.sp.vC       -relief sunken -textvariable par_setcal -width 8
-entry  .ex.sp.vTinmax  -relief sunken -textvariable par_ticorr -width 8
-entry  .ex.sp.vToutmax -relief sunken -textvariable par_tocorr -width 8
-entry  .ex.sp.vAlph    -relief sunken -textvariable par_alpha -width 5
+foreach {o v} {.ex.sp.nSk par_sskip  .ex.sp.nSd par_srcd  .ex.sp.nSin par_srcin \
+ .ex.sp.nSout par_srcout  .ex.sp.nSc par_srccal  .ex.sp.vC par_setcal \
+ .ex.sp.vTinmax par_ticorr  .ex.sp.vToutmax par_tocorr  .ex.sp.vAlph par_alpha \
+} {entry $o {*}$_ $v}
 grid   [label .ex.sp.l1 -an e -text [mc "Skip samples"]] .ex.sp.nSk -sticky ew -padx 4
 grid   [label .ex.sp.l2 -an e -text [mc "Dark src"]] .ex.sp.nSd     -sticky ew -padx 4
 grid   [label .ex.sp.l3 -an e -text [mc "IN src"]]   .ex.sp.nSin    -sticky ew -padx 4
@@ -198,11 +159,8 @@ grid   [label .ex.sp.l9 -an e -text [mc "Smooth"]]   .ex.sp.vAlph   -sticky ew -
 grid columnconfigure    .ex.sp 1 -weight 1
 
 checkbutton .ex.in.en -variable par_integrate
-entry  .ex.in.ia   -relief sunken -textvariable intg(srcin,s) -width 8
-entry  .ex.in.in   -relief sunken -textvariable intg(srcin,n) -width 8
-entry  .ex.in.oa   -relief sunken -textvariable intg(srcout,s) -width 8
-entry  .ex.in.on   -relief sunken -textvariable intg(srcout,n) -width 8
-entry  .ex.in.oz   -relief sunken -textvariable intg(delta) -width 8
+foreach {o v} {.ex.in.ia intg(srcin,s)  .ex.in.in intg(srcin,n)  .ex.in.oa intg(srcout,s) \
+.ex.in.on intg(srcout,n)  .ex.in.oz intg(delta)} {entry $o {*}$_ $v}
 grid   [label .ex.in.l1 -an e -text [mc Enable]]   .ex.in.en -sticky w  -padx 4
 grid   [label .ex.in.l2 -an e -text [mc input]]    .ex.in.ia -sticky ew -padx 4
 grid   [label .ex.in.l3 -an e -text [mc {[mmol]}]] .ex.in.in -sticky ew -padx 4
@@ -224,8 +182,8 @@ grid rowconfigure    .ex all -weight 1
 proc animate {} {
 	global AnimImg
 
-	foreach {w _} [split [array names AnimImg *,n] ,] {break}
-	if {[incr AnimImg($w,n)] < $AnimImg($w,div)} {return}
+	foreach {w _} [split [array names AnimImg *,n] ,] break
+	if {[incr AnimImg($w,n)] < $AnimImg($w,div)} return
 	set AnimImg($w,n) 0
 
 	if {[incr AnimImg($w,i)] >= $AnimImg($w,ni)} {set AnimImg($w,i) 0}
@@ -250,25 +208,21 @@ proc setanimate {w icons {divisor 4}} {
 
 # activate one of  four flags
 proc show_dset {n} {
-	if {$n == 1} { .toolbarl.dset1 configure -state active } else { .toolbarl.dset1 configure -state disabled  }
-	if {$n == 2} { .toolbarl.dset2 configure -state active } else { .toolbarl.dset2 configure -state disabled  }
-	if {$n == 3} { .toolbarl.dset3 configure -state active } else { .toolbarl.dset3 configure -state disabled  }
-	if {$n == 4} { .toolbarl.dset4 configure -state active } else { .toolbarl.dset4 configure -state disabled  }
+	foreach q {1 2 3 4} {
+	 .toolbarl.dset$q configure -state [if {$n == $q} {set _ active} else {set _ disabled}]
+	}
 }
 
 proc showex {showit} {
 	global vShowEx
 
-	if { $showit } {
+	if $showit {
 	   wm manage .ex
-	   wm protocol .ex WM_DELETE_WINDOW { showex 0 }
+	   wm protocol .ex WM_DELETE_WINDOW {showex 0}
 	   wm attributes .ex -topmost 1
 	   wm title .ex [mc "Extended data"]
-	   set vShowEx 1
-	} else {
-	   wm forget .ex
-	   set vShowEx 0
-	}
+	} else {wm forget .ex}
+   set vShowEx $showit
 }
 
 proc showstatus {s} {
@@ -286,10 +240,14 @@ proc setbutton {s} {
 
 proc inputdata {s} {
 	global sysbg
-	if {$s=="srcin"}  { .ex.cp.vTin configure -bg lightblue; .toolbar.din configure -bg lightblue} else { .ex.cp.vTin configure -bg $sysbg; .toolbar.din configure -bg $sysbg }
-	if {$s=="srcout"} { .ex.cp.vTout configure -bg lightgreen; .toolbar.dout configure -bg lightgreen} else { .ex.cp.vTout configure -bg $sysbg; .toolbar.dout configure -bg $sysbg }
-	if {$s=="srcd"}   { .ex.cp.vTd configure -bg lightgray } else { .ex.cp.vTd configure -bg $sysbg}
-	if {$s=="srccal"} { .ex.cp.vTc configure -bg IndianRed1} else { .ex.cp.vTc configure -bg $sysbg}
+	if {$s eq "srcin"}  {set _ lightblue} else {set _ $sysbg}
+	.ex.cp.vTin configure -bg $_
+	.toolbar.din configure -bg $_
+	if {$s eq "srcout"} {set _ lightgreen} else {set _ $sysbg}
+	.ex.cp.vTout configure -bg $_
+	.toolbar.dout configure -bg $_
+	.ex.cp.vTd configure -bg [if {$s eq "srcd"} {set _ lightgray } else {set sysbg}]
+	.ex.cp.vTc configure -bg [if {$s=="srccal"} {set _ IndianRed1} else {set sysbg}]
 }
 
 proc flashscale {s} {
@@ -302,23 +260,24 @@ proc flashscale {s} {
 	}
 }
 
+proc progress_frame {} {
+	toplevel .progress
+	button .progress.stop -command {unset -nocomplain prog_perc} -text [mc "Cancel"] -width 8
+	canvas .progress.prog -width 200 -height 20 -bd 1 -relief sunken -highlightt 0
+	.progress.prog create rectangle 0 0 0 20 -tags bar -fill navy
+
+	grid .progress.prog -sticky ew -padx 10 -pady 10
+	grid .progress.stop -pady 10
+	wm title .progress [mc "Reading..."]
+	wm resizable .progress 0 0
+	wm protocol .progress WM_DELETE_WINDOW {unset -nocomplain prog_perc}
+	focus .progress.stop
+}
+
 proc progress {v} {
 	global prog_perc
 
-	if {![winfo exists .progress] && $v ne ""} {
-		toplevel .progress
-		button .progress.stop -command {unset -nocomplain prog_perc} -text [mc "Cancel"] -width 8
-		canvas .progress.prog -width 200 -height 20 -bd 1 -relief sunken -highlightt 0
-		.progress.prog create rectangle 0 0 0 20 -tags bar -fill navy
-
-		grid .progress.prog -sticky ew -padx 10 -pady 10
-		grid .progress.stop -pady 10
-		wm title .progress [mc "Reading..."]
-		wm resizable .progress 0 0
-		wm protocol .progress WM_DELETE_WINDOW {unset -nocomplain prog_perc}
-		set prog_perc ""
-		focus .progress.stop
-	}
+	if {![winfo exists .progress] && $v ne ""} {progress_frame; set prog_perc ""}
 
 	if {$v eq ""} {
 		catch {destroy .progress}

@@ -63,8 +63,11 @@ proc ::AutoPlotM::rescaler {name new} {
 
 proc ::AutoPlotM::toPixel {ab coord} {
   foreach {b a} $ab break
-  expr int($a * $coord + $b)
+  expr {int($a*$coord+$b)}
 }
+
+proc ::AutoPlotM::vproc {v body} {upvar $v _
+  if [info exist _] {uplevel 1 "set _ $_;" $body}}
 
 # draw axis/grid, size:in pixels,
 # sel: {0 1} for x or {1 2} for y - coordinate selection
@@ -72,23 +75,20 @@ proc ::AutoPlotM::DrawAxis {wnd sel size fixed atg} {
   variable scale
   variable pscale
 
-  set v  $scale($atg,amin)
-  set out [expr {$scale($atg,amax)+0.5*$scale($atg,astep)}]
   set ta [list -tag $atg]
-  set ga [list -dash {2 2} -tag $atg]
-  set ad 0
-  if [info exist pscale($atg,gcolor)] {lappend ga -fill $pscale($atg,gcolor)}
-  if [info exist pscale($atg,tcolor)] {lappend ta -fill $pscale($atg,tcolor)}
-  if [info exist pscale($atg,anchor)] {lappend ta -anchor $pscale($atg,anchor)}
-  if [info exist pscale($atg,offset)] {
-   set fixed [expr {$fixed+$pscale($atg,offset)}]}
-  if [info exist pscale($atg,fmt)] {set fmt $pscale($atg,fmt)}
+  set ga [concat -dash {{2 2}} $ta]
+  vproc pscale($atg,gcolor) {lappend ga -fill $_}
+  vproc pscale($atg,tcolor) {lappend ta -fill $_}
+  vproc pscale($atg,anchor) {lappend ta -anchor $_}
+  vproc pscale($atg,offset) {set fixed [expr {$fixed+$_}]}
+  vproc pscale($atg,fmt) {set fmt $_}
 
-  while { $v < $out } {
+  set i $scale($atg,astep)
+  set out [expr {$scale($atg,amax)+0.5*$i}]
+  for {set v $scale($atg,amin)} {$v < $out} {set v [expr {$v+$i}]} {
 	set vpix [toPixel $scale($atg,ab) $v]
 	foreach {x y} [lrange [list $vpix $fixed $vpix] {*}$sel] break
 	set atxt [if [info exist fmt] {format $fmt $v} else {set v}]
-	set v [expr {$v+$scale($atg,astep)}]
 
 	$wnd create line {*}[lrange [list $x 0 $y] {*}$sel] \
 		{*}[lrange [list $x $size $y] {*}$sel] {*}$ga
@@ -99,21 +99,12 @@ proc ::AutoPlotM::DrawAxis {wnd sel size fixed atg} {
 proc ::AutoPlotM::nfirst {i} {lindex [split $i ,] 0}
 
 # return list of data sets for axis
-proc ::AutoPlotM::getset {axis} {
+proc ::AutoPlotM::getset {a t} {
   variable dset
 
-  if {$axis eq "all"} {return [list all]}
-  set l {{0 1}}
-  foreach v [array names dset *,xaxis] {
-	if {$dset($v) eq $axis} {lappend l [nfirst $v]}
-  }
-  if {[llength $l] > 1} { return $l }
-  set l {{1 2}}
-  foreach v [array names dset *,yaxis] {
-	if {$dset($v) eq $axis} {lappend l [nfirst $v]}
-  }
-  if {[llength $l] > 1} { return $l }
-  return [list]
+  set l {}
+  foreach v [array names dset $t] {if {$dset($v) eq $a} {lappend l [nfirst $v]}}
+  return $l
 }
 
 proc ::AutoPlotM::replot { wnd {atg "all"} } {
@@ -129,20 +120,20 @@ proc ::AutoPlotM::replot { wnd {atg "all"} } {
   if {![info exist scale($atg,vmin)] ||
       ![info exist scale($atg,vmax)] } return
 
+  $wnd delete $atg
+
   foreach {p q r} [masaxis $scale($atg,vmin) $scale($atg,vmax)] break
   array set scale [list $atg,amin $p $atg,amax $q $atg,astep $r]
+  if {![info exist scale($atg,amin)]} return
+
+  set typ  {0 1}
+  if {[llength [set slst [getset $atg *,xaxis]]] == 0} {
+    set typ  {1 2}
+    if {[llength [set slst [getset $atg *,yaxis]]] == 0} return
+  }
 
   set wheight [winfo height $wnd]
   set wwidth  [winfo width $wnd]
-
-  set typ  [getset $atg]
-  if {[llength $typ] == 0} return
-  set slst [lrange $typ 1 end]
-  set typ  [lindex $typ 0]
-
-  $wnd delete $atg
-  if {![info exist scale($atg,amin)]} return
-
   set pix [if [lindex $typ 0] {expr {-$wheight}} else {set wwidth}]
   set tmp [scaler $scale($atg,amin) $scale($atg,amax) $pix]
 
@@ -236,9 +227,7 @@ proc ::AutoPlotM::minmax {v vmin vmax} {
   upvar $vmin mi
   upvar $vmax ma
 
-  if {[info exist ma]==0 || [info exist mi]==0} {
-	set ma [set mi $v]; return true
-  }
+  if {![info exist ma] || ![info exist mi]} {set ma [set mi $v]; return true }
   if {$v > $ma} {set ma $v; return true }
   if {$v < $mi} {set mi $v; return true }
 

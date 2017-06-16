@@ -42,9 +42,9 @@ proc cmd_clear {} {
 proc cmd_close {} {
 	global  dumpfl
 
-	set m $dumpfl
-	unset dumpfl
-	close $m
+	catch {set _ $dumpfl
+	unset -nocomplain dumpfl
+	close $_}
 
 	setbutton [mc "Record"]
 }

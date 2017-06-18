@@ -162,7 +162,6 @@ proc ::AutoPlotM::clear { wnd } {
 }
 
 proc ::AutoPlotM::createaxis {xy {dstg set1} {fmt %g} {anchor w} } {
-  variable scale
   variable pscale
   variable dset
 
@@ -223,14 +222,10 @@ proc ::AutoPlotM::plotXYdot {wnd x y dtg cfil xsc ysc} {
   $wnd create line $pxm $py $pxp $py -fill $cfil -tag $dtg
 }
 
-proc ::AutoPlotM::minmax {v vmin vmax} {
-  upvar $vmin mi
-  upvar $vmax ma
-
+proc ::AutoPlotM::minmax {v vmin vmax} {upvar $vmin mi $vmax ma
   if {![info exist ma] || ![info exist mi]} {set ma [set mi $v]; return true }
   if {$v > $ma} {set ma $v; return true }
   if {$v < $mi} {set mi $v; return true }
-
   return false
 }
 

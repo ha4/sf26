@@ -19,8 +19,7 @@ foreach {n o} {File fl  Plot plt  Data  dat} {
 .mbar add command -label [mc About] -underline 0 -command { cmd_about }
 
 foreach {n c} {"Save as.." {cmd_fsel config_logfile} "Record" cmd_open \
-"Stop Recording" cmd_close   "Replay File.." cmd_fread \
-"Layer 2 File.." cmd_f2read  "Console" cmd_cons} {
+"Stop Recording" cmd_close   "Replay File.." cmd_fread "Console" cmd_cons} {
 .mbar.fl add command -label [mc $n] -command $c}
 .mbar.fl add separator
 .mbar.fl add command -label [mc Exit] -command cmd_exit
@@ -122,10 +121,9 @@ output oa intg(srcout,s) {[mmol]} on intg(srcout,n) Delta oz intg(delta)} {
 grid [lb .ex.in [mc $t]] [entry .ex.in.$o {*}$_ $v] {*}$q}
 grid columnconfigure    .ex.in 1 -weight 1
 
-grid .ex.cv .ex.in -sticky news -padx 5 -pady 5
-grid .ex.cp .ex.sp -sticky news -padx 5 -pady 5
-grid columnconfigure .ex all -weight 1
-grid rowconfigure    .ex all -weight 1
+grid .ex.cv .ex.in {*}[set _ {-sticky news -padx 5 -pady 5}]
+grid .ex.cp .ex.sp {*}$_
+foreach c {columnconfigure rowconfigure} { grid $c .ex all -weight 1}
 }
 
 # --------------------
@@ -163,7 +161,7 @@ proc setanimate {w icons {divisor 4}} {
 proc show_dset {n} {
 	foreach q {1 2 3 4} {
 	 .toolbarl.dset$q configure -state [if {$n == $q} \
-		{set _ active} else {set _ disabled}]}
+		{list active} else {list disabled}]}
 }
 
 proc showex {showit} {
@@ -179,7 +177,7 @@ proc showex {showit} {
 }
 
 proc showstatus {s} {global sysbg; .toolbarl.port configure \
-	-bg [if {$s ne "connected"} {set _ pink } else {set sysbg}]}
+	-bg [if {$s ne "connected"} {list pink} else {set sysbg}]}
 
 proc setbutton {s} {.toolbar.open configure -text $s}
 
@@ -191,8 +189,8 @@ proc inputdata {s} {
 	if {$s eq "srcout"} {set _ lightgreen} else {set _ $sysbg}
 	.ex.cp.vdataTo configure -bg $_
 	.toolbar.dout configure -bg $_
-	.ex.cp.vdataTd configure -bg [if {$s eq "srcd"} {set _ lightgray } else {set sysbg}]
-	.ex.cp.vdataTc configure -bg [if {$s=="srccal"} {set _ IndianRed1} else {set sysbg}]
+	.ex.cp.vdataTd configure -bg [if {$s eq "srcd"} {list lightgray} else {set sysbg}]
+	.ex.cp.vdataTc configure -bg [if {$s=="srccal"} {list IndianRed1} else {set sysbg}]
 }
 
 proc flashscale {s} {

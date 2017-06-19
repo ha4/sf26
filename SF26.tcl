@@ -8,8 +8,8 @@ exec wish "$0" "$@"
 # http://wiki.tcl.tk/969
 package require msgcat
 namespace import msgcat::mc
-set sf26cc_version "3.3"
-set sf26cc_date "20170612"
+set sf26cc_version "3.4"
+set sf26cc_date "20170619"
 set sf26dir [file dirname [info script]]
 source $sf26dir/daqu.tcl
 source $sf26dir/lowpass.tcl
@@ -27,7 +27,7 @@ set dataTc $par_setcal
 ::msgcat::mclocale ru
 ::msgcat::mcload $sf26dir
 
-::DAQU::channel chu data_dispatcher
+::DAQU::channel chu data_processL1
 chu port $config_port
 # --- Widgets SETUP
 frames

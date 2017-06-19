@@ -48,16 +48,16 @@ frame .toolbarl -bd 2 -relief flat
 # button .toolbar.exitButton -image img -relief flat -command {cmd_exit}
 
 label  .toolbar.l1 -text [mc "IN"]
-entry  .toolbar.din   -relief sunken -textvariable dataDi -width 10
+entry  .toolbar.din   -relief sunken -width 10
 label  .toolbar.l2 -text [mc "OUT"]
-entry  .toolbar.dout  -relief sunken -textvariable dataDo -width 10
+entry  .toolbar.dout  -relief sunken -width 10
 button .toolbar.open  -text [mc "Record"] -width 8 -relief raised \
    -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file  -relief sunken -textvariable config_logfile -width 26
 button .toolbar.fsel  -text "..." -relief raised -command {cmd_fsel}
 label  .toolbar.l3 -text [mc {Ozone [mmol]}]
-entry  .toolbar.ozon  -relief sunken -textvariable intg(delta) -width 10
+entry  .toolbar.ozon  -relief sunken -width 10
 button .toolbar.mark  -text [mc "Mark"] -relief raised -width 6 -command {cmd_mark}
 foreach s {1 2 3 4 5 6} {label .toolbar.s$s -text {} -borderwidth 0 -width 2 -padx 0}
 foreach o {s1 l1 din  s2 l2 dout  s3 open s4  anim file fsel  s5 l3 ozon s6  mark} {
@@ -71,7 +71,7 @@ entry .toolbarl.dvolt  -relief sunken -textvariable datavolt -width 10
 label .toolbarl.lm -text {} -borderwidth 0 -width 2 -padx 0
 label .toolbarl.dz -relief sunken -text " Z "
 label .toolbarl.ds -relief sunken -text " S "
-entry .toolbarl.dc -relief groove -textvariable dataConv -width 8 -state disabled
+entry .toolbarl.dc -relief groove -width 8 -state disabled
 foreach q {conn port dset1 dset2 dset3 dset4 dvolt lm dz ds dc} {
 pack .toolbarl.$q -side left -padx 2}
 
@@ -234,3 +234,11 @@ proc progress {v} {
 }
 
 proc showmk {n} {.toolbar.mark configure -text "[mc Mark] $n"}
+
+proc showvar {e v} {
+	if {$e eq "ozon"} {set _ %.4f} else {set _ %.3f}
+	.toolbar.$e delete 0 end
+	.toolbar.$e insert 0 [format $_ $v]
+}
+
+proc showvar-dataConv {n} {.toolbarl.dc delete 0 end; .toolbarl.dc configure -text [format %.4f $n]}

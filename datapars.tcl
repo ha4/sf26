@@ -10,6 +10,18 @@ proc q2name {q} {foreach n {srcin srcout srcd srccal} {global par_$n
 # transition to optical density conversion
 proc t2d {t} {if {$t > 0.001} {expr {2.0-log10($t)}} else {expr 5.0}}
 
+# Simpson 1st order integration method
+proc integrate {s t v} {
+	global intg par_gasflow par_optolen par_optoeps
+	array set intg [list $s,s [if [info exist intg($s,t)] {expr {$intg($s,s)\
+	 +($intg($s,v)+$v)*($t-$intg($s,t))/2.0}} else {expr 0}] $s,t $t $s,v $v]
+	set intg($s,n) [expr {$intg($s,s)*$par_gasflow/60.0/$par_optolen/$par_optoeps}]
+	foreach r {in out} {if {![string is double -strict $intg(src$r,n)]} {
+		set intg(src$r,n) 0.0}}
+	set intg(delta) [expr {$intg(srcin,n) -  $intg(srcout,n)}]
+}
+
+
 # weird calculation here: 
 #       Tin= Tk*(T - Td)/Timax if src-in
 #	Tout=Tk*(T - Td)/Tomax if src-out
@@ -21,23 +33,19 @@ proc t2d {t} {if {$t > 0.001} {expr {2.0-log10($t)}} else {expr 5.0}}
 
 
 # 
-# main data handler
-#
-
+# main data handler Layer 3 -
+#  - plot/storage/integration
 proc data_processL3 {t in out} {
-	global config_tplot
-	global chart
-	global dumpfl
-	global kmarkdo
-	global par_integrate
+	global config_tplot par_integrate intg
+	global chart dumpfl kmarkdo
 
-	if {$config_tplot == "d"} {
-		if {$in != "*"}  {$chart $t $in  "setsrcin"}
-		if {$out != "*"} {$chart $t $out "setsrcout"}
+	if {$config_tplot eq "d"} {
+		if {$in ne "*"}  {$chart $t $in  "setsrcin" ;showvar din $in}
+		if {$out ne "*"} {$chart $t $out "setsrcout";showvar dout $out}
 	}
 
 # store to file
-        if {[info exist dumpfl]} {
+        if [info exist dumpfl] {
 		set s "$t $in $out"
 		if {[info exists kmarkdo]} {
 			append s " $kmarkdo"
@@ -47,30 +55,16 @@ proc data_processL3 {t in out} {
   	 	animate
 	}
 
-	if {$par_integrate && $in != "*"}  {integrate srcin  $t $in}
-	if {$par_integrate && $out != "*"} {integrate srcout $t $out}
-}
-
-proc integrate {s t v} {
-	global intg
-	global par_gasflow
-	global par_optolen
-	global par_optoeps
-
-	if [info exist intg($s,t)] {
-		set i [expr {$intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0}]
-	} else {
-		set i 0
+	if {$par_integrate} {
+		if {$in ne "*"}  {integrate srcin  $t $in}
+		if {$out ne "*"} {integrate srcout $t $out}
+		if [info exists intg(delta)] {showvar ozon $intg(delta)}
 	}
-	set intg($s,s) $i
-	set intg($s,t) $t
-	set intg($s,v) $v
-	set intg($s,n) [expr {$par_gasflow*$intg($s,s)/60.0/$par_optolen/$par_optoeps}]
-	if {![string is double -strict $intg(srcin,n)]} {set intg(srcin,n) 0}
-	if {![string is double -strict $intg(srcout,n)]} {set intg(srcout,n) 0}
-	set intg(delta) [expr {$intg(srcin,n) -  $intg(srcout,n)}]
 }
 
+#
+# Data handling Layer 2 - 
+#  - calibration/correction/scaling
 # time, cuvette, intensity%
 proc data_processL2 {t s i} {
 	global chart
@@ -99,9 +93,9 @@ proc data_processL2 {t s i} {
 	global dataDi
 	global dataDo
 
-	if {$s == "srcd"} {
+	if {$s eq "srcd"} {
 		set dataTd [smooth_a $i $par_alpha fil0]
-		set dataConv [expr {$i - $dataTd}]
+		showvar-dataConv [set dataConv [expr {$i - $dataTd}]]
 		if {$dataCORR} {
 			set par_tz $dataTd
 			flashscale z
@@ -109,9 +103,9 @@ proc data_processL2 {t s i} {
 	}
 	set $i [expr {$i-$par_tz}]
 
-        if {$s == "srccal"} {
+        if {$s eq "srccal"} {
 		set dataTc [smooth_a $i $par_alpha filk]
-		set dataConv [expr {$i - $dataTc}]
+		showvar-dataConv [set dataConv [expr {$i - $dataTc}]]
 		if {$dataCAL} {set par_setcal [smooth_a $dataTc $par_alpha fil1]}
 		if {$dataCORR} {
 			set par_tk [expr {$dataTc/$par_setcal}]
@@ -120,28 +114,28 @@ proc data_processL2 {t s i} {
 	}
 	set $i [expr {$i * $par_tk}]
 
-	if {$config_tplot == "t"} {$chart $t $i "set$s"}
+	if {$config_tplot eq "t"} {$chart $t $i "set$s"}
 
-	if {$src == "srcin"} {
+	if {$src eq "srcin"} {
 		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
 		set dataTi [expr {$trans*100.0/$par_ticorr}]
 		set dataDi [t2d $dataTi]
 		data_processL3 $t $dataDi "*"
 	}
 		
-	if {$src == "srcout"} {
+	if {$src eq "srcout"} {
 		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
 		set dataTo [expr {$trans*100.0/$par_tocorr}]
 		set dataDo [t2d $dataTo]
-		data_processL4 $t "*" $dataDo
+		data_processL3 $t "*" $dataDo
 	}
 }
 
 
 #
-# preliminary data handler Layer1
+# preliminary data handler Layer1 -
+#  - filtering/identification
 #
-
 proc data_processL1 {self} {
 	global fil
 	global fil1
@@ -154,13 +148,12 @@ proc data_processL1 {self} {
 	global datavolt
 	global par_sskip
 
-
 	set clk [clock seconds]
 
 	foreach {chan volt bits} [$self decode] break
 	if {![info exists bits]} {
 	   showstatus [$self status]
-	   return [list]
+	   return
 	}
 
 	# ignore $chan, read bits
@@ -185,7 +178,7 @@ proc data_processL1 {self} {
 		unset -nocomplain fil1
 		show_dset $cuvette
 		inputdata Qnow
-		return [list]
+		return
 	} 
 
 	# once per second
@@ -205,10 +198,6 @@ proc data_processL1 {self} {
 	return
 }
 
-
-proc data_dispatcher {self} {
-	data_processL1 $self
-}
 
 proc l3data {a} {
 	set d [split $a " "]

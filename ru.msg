@@ -28,8 +28,8 @@
 ::msgcat::mcset ru "date" "дата"
 ::msgcat::mcset ru "SF-26 Data Acustion System" "Система измерения SF-26"
 ::msgcat::mcset ru "Reading..." "Чтение..."
-::msgcat::mcset ru "Data File Overwrite"
-::msgcat::mcset ru "File EXIST.\n Overwrite??"
+::msgcat::mcset ru "Data File Overwrite" "Перезапись файла"
+::msgcat::mcset ru "File EXIST.\n Overwrite??" "Файл уже СУЩЕСТВУЕТ.\nПерезаписать?"
 ::msgcat::mcset ru {Integration {1|0}} {Вкл. интегрирование {1|0}}
 ::msgcat::mcset ru {Extinction [1/M/cm]} {Коэфф. экстинкции [1/M/см]}
 ::msgcat::mcset ru {Cell length [cm]} {Длина кюветы [см]}

@@ -3,29 +3,12 @@
 
 
 # quvette name translation
-proc q2name {q} {
-	global par_srcin
-	global par_srcout
-	global par_srcd
-	global par_srccal
-
-	if {$q == $par_srcin}  { return srcin  }
-	if {$q == $par_srcout} { return srcout }
-	if {$q == $par_srcd}   { return srcd   }
-	if {$q == $par_srccal} { return srccal }
-
-	return none
-}
+proc q2name {q} {foreach n {srcin srcout srcd srccal} {global par_$n
+		if {$q == [set par_$n]} {return $n}}
+		return none}
 
 # transition to optical density conversion
-proc t2d {t} {
-	if {$t > 0} {
-	  set d [expr {2.0-log10($t)}]
-	  if {$d < 5.0} { return $d }
-	} 
-	return 5.0
-}
-
+proc t2d {t} {if {$t > 0.001} {expr {2.0-log10($t)}} else {expr 5.0}}
 
 # weird calculation here: 
 #       Tin= Tk*(T - Td)/Timax if src-in
@@ -41,11 +24,12 @@ proc t2d {t} {
 # main data handler
 #
 
-proc data_out {t in out} {
+proc data_processL3 {t in out} {
 	global config_tplot
 	global chart
 	global dumpfl
 	global kmarkdo
+	global par_integrate
 
 	if {$config_tplot == "d"} {
 		if {$in != "*"}  {$chart $t $in  "setsrcin"}
@@ -62,16 +46,17 @@ proc data_out {t in out} {
 		puts $dumpfl $s
   	 	animate
 	}
+
+	if {$par_integrate && $in != "*"}  {integrate srcin  $t $in}
+	if {$par_integrate && $out != "*"} {integrate srcout $t $out}
 }
 
 proc integrate {s t v} {
 	global intg
-	global par_integrate
 	global par_gasflow
 	global par_optolen
 	global par_optoeps
 
-	if {!$par_integrate} return
 	if [info exist intg($s,t)] {
 		set i [expr {$intg($s,s)+($intg($s,v)+$v)*($t-$intg($s,t))/2.0}]
 	} else {
@@ -86,45 +71,8 @@ proc integrate {s t v} {
 	set intg(delta) [expr {$intg(srcin,n) -  $intg(srcout,n)}]
 }
 
-proc data_intg {t in out} {
-	global par_integrate
-
-	if {$in != "*"}  {integrate srcin  $t $in}
-	if {$out != "*"} {integrate srcout $t $out}
-}
-
-# time, source quvette, transition%
-proc data_processL4 {t src trans} {
-	global par_ticorr
-	global par_tocorr
-	global fil1
-	global par_alpha
-	global dataCAL
-
-	global dataTi
-	global dataTo
-	global dataDi
-	global dataDo
-
-	if {$src == "srcin"} {
-		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
-		set dataTi [expr {$trans*100.0/$par_ticorr}]
-		set dataDi [t2d $dataTi]
-		return [list $t $dataDi "*"]
-	}
-		
-	if {$src == "srcout"} {
-		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
-		set dataTo [expr {$trans*100.0/$par_tocorr}]
-		set dataDo [t2d $dataTo]
-		return [list $t "*" $dataDo]
-	}
-
-	return [list]
-}
-
-# time, quvette number, intensity%
-proc data_processL3 {t s i} {
+# time, cuvette, intensity%
+proc data_processL2 {t s i} {
 	global chart
 	global config_tplot
 	global par_setcal
@@ -142,7 +90,15 @@ proc data_processL3 {t s i} {
 	global par_tz
 	global dataConv
 
-	inputdata $s
+	global par_ticorr
+	global par_tocorr
+	global fil1
+
+	global dataTi
+	global dataTo
+	global dataDi
+	global dataDo
+
 	if {$s == "srcd"} {
 		set dataTd [smooth_a $i $par_alpha fil0]
 		set dataConv [expr {$i - $dataTd}]
@@ -166,7 +122,19 @@ proc data_processL3 {t s i} {
 
 	if {$config_tplot == "t"} {$chart $t $i "set$s"}
 
-	switch $s srcin - srcout {list $t $s $i} default {list}
+	if {$src == "srcin"} {
+		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
+		set dataTi [expr {$trans*100.0/$par_ticorr}]
+		set dataDi [t2d $dataTi]
+		data_processL3 $t $dataDi "*"
+	}
+		
+	if {$src == "srcout"} {
+		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
+		set dataTo [expr {$trans*100.0/$par_tocorr}]
+		set dataDo [t2d $dataTo]
+		data_processL4 $t "*" $dataDo
+	}
 }
 
 
@@ -179,26 +147,29 @@ proc data_processL1 {self} {
 	global fil1
 	global StartT
 	global Qprev
+	global Qnow
 	global Tprev
 	global skippedsmp
+	global dataTm
+	global datavolt
+	global par_sskip
 
 
 	set clk [clock seconds]
 
-	foreach {chan volt bits} [$self decode] {break}
+	foreach {chan volt bits} [$self decode] break
 	if {![info exists bits]} {
 	   showstatus [$self status]
 	   return [list]
 	}
 
 	# ignore $chan, read bits
-	set quvette [switch $bits 7 {expr {1}}  11 {expr {2}}  13 {expr {3}}  \
-		14 {expr {4}} default {expr {0}}]
+	set cuvette [switch $bits 7 {expr 1} 11 {expr 2} 13 {expr 3} 14 {expr 4} default {expr 0}]
 	lowpass_avg_put $volt fil
 
-	if {![info exist StartT]} { set StartT $clk }
+	if {![info exist StartT]} {set StartT $clk}
 	set t [expr {$clk-$StartT}]
-	if {(![info exist Tprev]) || $Tprev == $t} {
+	if {![info exist Tprev] || $Tprev == $t} {
 		set Tprev $t
 		set timch 0
 	} else {
@@ -206,12 +177,14 @@ proc data_processL1 {self} {
 		set timch 1
 	}
 
-	if { ![info exist Qprev] || $Qprev != $quvette } {
-		set Qprev $quvette
+	if {![info exist Qprev] || $Qprev != $cuvette} {
+		set Qprev $cuvette
+		set Qnow [q2name $cuvette]
 		set skippedsmp 0
 		lowpass_avg_clean fil
 		unset -nocomplain fil1
-		show_dset $quvette
+		show_dset $cuvette
+		inputdata Qnow
 		return [list]
 	} 
 
@@ -219,58 +192,28 @@ proc data_processL1 {self} {
 	if {$timch} {
 		set u [lowpass_avg_get fil]
 		lowpass_avg_clean fil
-		return [list $t $quvette $u]
+
+		# display data
+		set dataTm $t
+		set datavolt "$u"
+		if {$cuvette == 0} return
+		# data stablilizer
+		if { [incr skippedsmp] < $par_sskip } return
+
+		data_processL2 $t $Qnow [expr {$u*100.0}]
 	}
-	return [list]
+	return
 }
 
-#
-# data handler Layer2
-#
-
-proc data_processL2 {t q u} {
-	global dataTm
-	global datavolt
-	global skippedsmp
-	global par_sskip
-
-# display data
-	set dataTm $t
-	set datavolt "$u"
-
-	if {$q == 0} {return [list]}
-
-# data stablilizer
-	if { [incr skippedsmp] < $par_sskip } {return [list]}
-
-	return [list $t [q2name $q] [expr {$u*100.0}]]
-}
 
 proc data_dispatcher {self} {
-	if {[set l1data [data_processL1 $self]] == {}} {return}
-	if {[set l2data [data_processL2 {*}$l1data]] == {}} {return}
-	if {[set l3data [data_processL3 {*}$l2data]] == {}} {return}
-	if {[set l4data [data_processL4 {*}$l3data]] == {}} {return}
-	data_out {*}$l4data
-	data_intg {*}$l4data
+	data_processL1 $self
 }
 
-proc l4data {a} {
+proc l3data {a} {
 	set d [split $a " "]
 	if {[llength $d] != 3} return
-	data_out {*}$d
-	data_intg {*}$d
-}
-
-proc l2data {a} {
-	set d [split $a " "]
-        if {[llength $d] != 4} return
-	foreach {t q v p} break
-	if {[set l2data [data_processL2 $t $q $v]] == {}} return
-	if {[set l3data [data_processL3 {*}$l2data]] == {}} return
-	if {[set l4data [data_processL4 {*}$l3data]] == {}} return
-	data_out {*}$l4data
-	data_intg {*}$l4data
+	data_processL3 {*}$d
 }
 
 proc datafileread {filename lineproc pindicator} {

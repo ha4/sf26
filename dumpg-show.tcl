@@ -18,7 +18,7 @@ frame .t
 frame .toolbar -bd 2 -relief flat
 
 entry  .toolbar.file                -relief sunken                 -textvariable ConfFile -width 36
-button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel ConfFile}
+button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel}
 
 radiobutton .toolbar.a   -text A   -value 0 -variable ConfMode
 radiobutton .toolbar.ab  -text AB  -value 1 -variable ConfMode
@@ -125,8 +125,8 @@ proc cmd_go {} {
  close $chan
 }
 
-proc cmd_fsel {fvar} {
-	upvar #0 $fvar sf
+proc cmd_fsel {} {
+	global ConfFile
 	set types {
 	    {{Data Files}       {.dat}        }
 	    {{Text Files}       {.txt}        }
@@ -135,7 +135,7 @@ proc cmd_fsel {fvar} {
 
 	set filename [tk_getOpenFile -filetypes $types]
 
-	if { $filename != "" } { set sf $filename }
+	if { $filename ne "" } { set ConfFile $filename }
 }
 
 catch { console hide }

@@ -28,7 +28,7 @@ entry  .toolbar.port                -relief sunken                 -textvariable
 button .toolbar.open  -text "  Open" -relief flat -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file                -relief sunken                 -textvariable ConfFile -width 26
-button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel ConfFile}
+button .toolbar.fsel  -text "..."   -relief raised                 -command {cmd_fsel}
 
 pack   .toolbar.cons  -side left -padx 2 -pady 2
 pack   .toolbar.clear -side left -padx 2 -pady 2
@@ -108,8 +108,8 @@ proc cmd_conn {} {
    $chu restart
 }
 
-proc cmd_fsel {fvar} {
-	upvar #0 $fvar sf
+proc cmd_fsel {} {
+	global ConfFile
 	set types {
 	    {{Data Files}       {.dat}        }
 	    {{Text Files}       {.txt}        }
@@ -118,7 +118,7 @@ proc cmd_fsel {fvar} {
 
 	set filename [tk_getSaveFile -filetypes $types -defaultextension {.dat}]
 
-	if { $filename != "" } { set sf $filename }
+	if { $filename ne "" } { set ConfFile $filename }
 }
 
 proc animate {w {divisor 4}} {

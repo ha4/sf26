@@ -53,15 +53,15 @@ proc cmd_open {} {
 	global  dumpfl
 	global  config_logfile
 
-	if {[info exist dumpfl]} {
+	if [info exist dumpfl] {
 		cmd_close
 		return
 	}
 
-	if {[file exist $config_logfile]} {
+	if [file exist $config_logfile] {
 		set retc [tk_messageBox -message [mc "File EXIST.\n Overwrite??"] \
 			-type yesno -icon warning -title [mc "Data File Overwrite"]]
-	if { $retc != "yes" } { return }
+	if {$retc ne "yes"} return
 	}
 
 	set dumpfl [open $config_logfile w+]
@@ -75,32 +75,24 @@ proc cmd_conn {} {
 	chu restart
 }
 
-proc cmd_fsel {fvar} {
-	upvar #0 $fvar sf
-	set types {
-		{{Data Files}       {.sf.dat}     }
-		{{Text Files}       {.txt}        }
-		{{All Files}        *             }
-	}
+proc cmd_fsel {} {
+	global config_logfile
+	set types {{"Data Files" .sf.dat} {"Text Files" .txt} {"All Files" *}}
 
 	set filename [tk_getSaveFile -filetypes $types \
 		-defaultextension {.sf.dat}]
 
-	if { $filename != "" } { set sf $filename }
+	if {$filename ne ""} {set config_logfile $filename}
 }
 
 proc cmd_fread {} {
 	global config_tplot
-	set types {
-		{{Data Files}       {.sf.dat}     }
-		{{Text Files}       {.txt}        }
-		{{All Files}        *             }
-	}
+	set types {{"Data Files" .sf.dat} {"Text Files" .txt} {"All Files" *}}
 
 	set filename [tk_getOpenFile -filetypes $types \
 		-defaultextension {.sf.dat}]
 
-	if { $filename == "" } {return}
+	if {$filename eq ""} return
 
 	set config_tplot d
 	cmd_clear

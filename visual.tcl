@@ -18,7 +18,7 @@ foreach {n o} {File fl  Plot plt  Data  dat} {
 .mbar add cascade -menu [menu .mbar.$o -tearoff 0] -label [mc $n] -underline 0}
 .mbar add command -label [mc About] -underline 0 -command { cmd_about }
 
-foreach {n c} {"Save as.." {cmd_fsel config_logfile} "Record" cmd_open \
+foreach {n c} {"Save as.." {cmd_fsel} "Record" cmd_open \
 "Stop Recording" cmd_close   "Replay File.." cmd_fread "Console" cmd_cons} {
 .mbar.fl add command -label [mc $n] -command $c}
 .mbar.fl add separator
@@ -55,7 +55,7 @@ button .toolbar.open  -text [mc "Record"] -width 8 -relief raised \
    -overrelief raised -command {cmd_open}
 label  .toolbar.anim  -relief flat
 entry  .toolbar.file  -relief sunken -textvariable config_logfile -width 26
-button .toolbar.fsel  -text "..." -relief raised -command {cmd_fsel config_logfile}
+button .toolbar.fsel  -text "..." -relief raised -command {cmd_fsel}
 label  .toolbar.l3 -text [mc {Ozone [mmol]}]
 entry  .toolbar.ozon  -relief sunken -textvariable intg(delta) -width 10
 button .toolbar.mark  -text [mc "Mark"] -relief raised -width 6 -command {cmd_mark}

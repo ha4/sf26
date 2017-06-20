@@ -60,8 +60,9 @@ label  .toolbar.l3 -text [mc {Ozone [mmol]}]
 entry  .toolbar.ozon  -relief sunken -width 10
 button .toolbar.mark  -text [mc "Mark"] -relief raised -width 6 -command {cmd_mark}
 foreach s {1 2 3 4 5 6} {label .toolbar.s$s -text {} -borderwidth 0 -width 2 -padx 0}
-foreach o {s1 l1 din  s2 l2 dout  s3 open s4  anim file fsel  s5 l3 ozon s6  mark} {
+foreach o {s1 l1 din  s2 l2 dout  s3 open s4  anim fsel  s5 l3 ozon s6  mark} {
 pack .toolbar.$o -side left}
+pack .toolbar.file -side left -after .toolbar.anim -fill x -expand 1
 
 button .toolbarl.conn  -text [mc "Connect"] -borderwidth 1 -relief flat \
   -overrelief raised -command {cmd_conn}

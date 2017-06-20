@@ -221,7 +221,7 @@ proc ::AutoPlotM::qset {vn vv} {upvar $vn v
 	if [info exist v] {set v} else {set v $vv}}
  
 # PlotData -- real data insert/draw
-proc ::AutoPlotM::PlotData {wnd xcoord ycoord {dstg set1} {typ line}} {
+proc ::AutoPlotM::PlotData {wnd x y {dstg set1} {typ line}} {
 	variable dset
 	variable scale
 	variable lastpt

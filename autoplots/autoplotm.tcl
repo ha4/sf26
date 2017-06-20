@@ -29,9 +29,9 @@ proc ::AutoPlotM::masaxis {dmin dmax} {
 	set ddd [expr pow(10,$ords-1)]
 
 # calculate max num of entries
-	set ordax [expr {ceil(($dmax-$dmin)/$ddd)}]
+	set ord [expr {ceil(($dmax-$dmin)/$ddd)}]
 
-	set astp [expr {$ddd*(($ordax<10)?1:(($ordax<20)?2:(($ordax<50)?5:10)))}]
+	set astp [expr {$ddd*(($ord<10)?1:(($ord<20)?2:(($ord<50)?5:10)))}]
 	set amin [expr {$astp * floor($dmin / $astp)}]
 	set amax [expr {$astp *  ceil($dmax / $astp)}]
 
@@ -230,15 +230,15 @@ proc ::AutoPlotM::PlotData {wnd xcoord ycoord {dstg set1} {typ line}} {
 	set yn [qset dset($dstg,yaxis) y]
 
 # is any changes in data range? is scale factor changed?
-	minmax $xcoord scale($xn,vmin) scale($xn,vmax)
-	if [minmax $xcoord scale($xn,amin) scale($xn,amax)] {replot $wnd $xn}
+	minmax $x scale($xn,vmin) scale($xn,vmax)
+	if [minmax $x scale($xn,amin) scale($xn,amax)] {replot $wnd $xn}
 
-	minmax $ycoord scale($yn,vmin) scale($yn,vmax)
-	if [minmax $ycoord scale($yn,amin) scale($yn,amax)] {replot $wnd $yn}
+	minmax $y scale($yn,vmin) scale($yn,vmax)
+	if [minmax $y scale($yn,amin) scale($yn,amax)] {replot $wnd $yn}
 
 	set c [qset dset($dstg,color) black]
 
 	if {[info exist scale($xn,ab)] && [info exist scale($yn,ab)]} {
-	 plotXY$typ $wnd $xcoord $ycoord $dstg $c $scale($xn,ab) $scale($yn,ab)}
-	set lastpt($dstg) [list $xcoord $ycoord]
+		plotXY$typ $wnd $x $y $dstg $c $scale($xn,ab) $scale($yn,ab)}
+	set lastpt($dstg) [list $x $y]
 }

@@ -116,16 +116,16 @@ proc data_processL2 {t s i} {
 
 	if {$config_tplot eq "t"} {$chart $t $i "set$s"}
 
-	if {$src eq "srcin"} {
-		if {$dataCAL} {set par_ticorr [smooth_a $trans $par_alpha fil1]}
-		set dataTi [expr {$trans*100.0/$par_ticorr}]
+	if {$s eq "srcin"} {
+		if {$dataCAL} {set par_ticorr [smooth_a $i $par_alpha fil1]}
+		set dataTi [expr {$i*100.0/$par_ticorr}]
 		set dataDi [t2d $dataTi]
 		data_processL3 $t $dataDi "*"
 	}
 		
-	if {$src eq "srcout"} {
-		if {$dataCAL} {set par_tocorr [smooth_a $trans $par_alpha fil1]}
-		set dataTo [expr {$trans*100.0/$par_tocorr}]
+	if {$s eq "srcout"} {
+		if {$dataCAL} {set par_tocorr [smooth_a $i $par_alpha fil1]}
+		set dataTo [expr {$i*100.0/$par_tocorr}]
 		set dataDo [t2d $dataTo]
 		data_processL3 $t "*" $dataDo
 	}

@@ -3,8 +3,8 @@
 #
 
 namespace eval ::AutoPlotM {
-# scale  x/y (name, ab amin amax astep vmin vmax)
-# scale param(name, fmt offset anchor color gcolor)
+# scale  x/y (name, ab amin amax astep vmin vmax) -- fills auto
+# pscale param(name, fmt offset anchor tcolor gcolor)
 # dset    : mix axis and data (dset, xaxis yaxis color)
 # pixel=ab[1]*value+ab[0]
 # functions create, clear, createaxis, PlotData
@@ -67,7 +67,7 @@ proc ::AutoPlotM::pix {ab coord} {
 }
 
 proc ::AutoPlotM::vproc {v body} {upvar $v _
-	if [info exist _] {uplevel 1 "set _ $_;" $body}}
+	if [info exist _] {uplevel 1 "set _ \"$_\";" $body}}
 
 # draw axis/grid, size:in pixels,
 # sel: {0 1} for x or {1 2} for y - coordinate selection
